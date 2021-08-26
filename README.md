@@ -6,8 +6,9 @@ $ mkdir CLThread
 $ cd CLThread
 $ swift package init --type executable
 ```
-Note that the contents of the print statement will not appear on the screen without main thread waiting until the background thread has finished executing.
-Since the background thread does not block the main thread, control is returned immediately to the main thread. Without the sleep delay, the main thread has
+In the code listing, the contents of the print statement will not appear on the screen if the 
+main thread does not wait until the background thread has finished executing. Since the background thread does not block the main thread, 
+control is returned immediately to the main thread. Without the sleep delay, the main thread has
 no further task to perform and so the program exits before the background thread completes the for-in loop. 
 ```swift
 import Foundation
