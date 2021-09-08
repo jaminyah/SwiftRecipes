@@ -1,5 +1,8 @@
 #Swift Recipes
 
+Reference:
+1. Swift Functional Programming
+
 ```bash
 1. Threading
 2. Functional Programming
@@ -7,6 +10,7 @@
 4. Data Types
 5. Protocols
 6. Network
+7. Lazy Evaluation
 
 ```
 
@@ -365,3 +369,22 @@ sportCar.race()
 * Put
 * Patch         // Analogous with update
 * Delete
+
+
+7. Lazy Evaluation
+
+Use the map function to multiple each value in an array by 3, then extract the last element. Eager evaluation results in all elements being processed
+then the last element is returned.
+```swift
+let array = [11, 22, 33, 44]
+let first = array.map({$0 * 3}).last!
+print(first)
+```
+
+Use the map function to multiply only the last element in the array by 3, then return the last element. Lazy evaluation results in only the last element
+being processed and returned.
+```swift
+let array = [1, 2, 3, 4]
+let last = array.lazy.map({$0 * 3}).last!
+print(last)
+```
