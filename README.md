@@ -542,19 +542,19 @@ end of loop - 1: <br/>
 input array = [4, 9, 6, 5] <br/>
 sorted array =  [ 2 ] <br/>
 
-end of loop - 2:
+end of loop - 2: <br/>
 input array = [ 9, 6, 5] <br/>
 sorted array = [ 2, 4 ] <br/>
 
-end of loop - 3:
+end of loop - 3: <br/>
 input array = [ 9, 6 ] <br/>
 sorted array = [ 2, 4, 5 ] <br/>
 
-end of loop - 4:
+end of loop - 4: <br/>
 input array = [ 9 ] <br/>
 sorted array = [ 2, 4, 5, 6 ] <br/>
 
-end of loop - 5:
+end of loop - 5: <br/>
 input array = [] <br/>
 sorted array = [ 2, 4, 5, 6, 9] <br/>
 
