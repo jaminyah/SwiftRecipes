@@ -1,7 +1,10 @@
 #Swift Recipes
 
-Reference:
+References:
+```bash
 1. Swift Functional Programming
+2. Programming in Smalltalk, TR87-023, April 15, 1987
+```
 
 ```bash
 1. Threading
@@ -9,9 +12,24 @@ Reference:
 3. Comparison
 4. Data Types
 5. Protocols
+5.1 Protocol Declaration
+5.2 Protocol Extension
+5.2.1 Protocol Extension - Computed Properties
 6. Network
+6.1 URLSession
+6.2 URLRequest
+6.3 URLSessionDataTask
+6.2 Network Layer Design
 7. Lazy Evaluation
-
+8. Algorithms
+8.1 Sorts
+8.2 Search
+9. Design Patterns
+9.1 Singleton
+9.2 Thread-safe Singleton
+10. Properties
+10.1 Stored Properties
+10.2 Computed Properties
 ```
 
 1. Command Line Threading - Linux
@@ -69,6 +87,15 @@ These are functions that take a function as the argument or that return a functi
 * .filter {}
 * .sorted {}
 * .forEach {}
+
+
+Reduce
+```swift
+// Sum array elements using higher order function
+
+let score = [17, 3, 22, 19, 42]
+let sum = score.reduce(0, +)
+```
 
 3. Comparsion
 
@@ -227,7 +254,7 @@ if let name = midName {
 
 5. Protocols
 
-Per Apple's Swift Programming Languge Guide - A protocol defines a blueprint of methods, properties, and other requirements that suit a particular task or piece of functionality.
+Per Apple's Swift Programming Languge Guide - A protocol defines a blueprint of methods, properties, and other requirements that suit a particular task or piece of functionality. Going back to Objective-C root language Smalltalk "...groups of operations are called protocols".
 
 Subclassing provides and inheritance class hierarchy relationship between classes. A child class inherits all the properties, methods and class initializers of its parent class. Note that a struct can conform to protocols thus giving it features similar to classes. Structs however and be passed in to functions as value types thus reducing side-effects.
 
@@ -302,6 +329,7 @@ extension UIColor {
     }
 }
 
+// Protocol optional property and method
 @objc protocol CarProtocol {
     var make: String { get set }
     var model: String { get set }
@@ -357,7 +385,103 @@ let sportCar = SportCar(make: "Jaguar", model: "XJR", cylinders: 8, color: .gree
 sportCar.race()
 ```
 
+5.4 Protocol as Type
+```swift
+import Foundation
 
+enum Powertrain {
+    case gasoline
+    case diesel
+    case electric
+    case hybrid
+}
+
+protocol Vehicle {
+    var make: String { get set }
+    var model: String { get set }
+    var powertrain: Powertrain { get set }
+    init(make: String, model: String, powertrain: Powertrain)
+}
+
+final class Sedan: Vehicle {
+    var make: String
+    var model: String
+    var powertrain: Powertrain
+    
+    init(make: String, model: String, powertrain: Powertrain) {
+        self.make = make
+        self.model = model
+        self.powertrain = powertrain
+    }
+}
+
+class SUV: Vehicle {
+    var make: String
+    var model: String
+    var powertrain: Powertrain
+    
+    // non-final class can only be satified by a required initializer
+    required init(make: String, model: String, powertrain: Powertrain) {
+        self.make = make
+        self.model = model
+        self.powertrain = powertrain
+    }
+}
+
+class Truck: Vehicle {
+    var make: String
+    var model: String
+    var powertrain: Powertrain
+    
+    // non-final class can only be satified by a required initializer
+    required init(make: String, model: String, powertrain: Powertrain) {
+        self.make = make
+        self.model = model
+        self.powertrain = powertrain
+    }
+}
+
+func makeVehicle() {
+    let suv = SUV(make: "Rover Tierra", model: "Del Fuego", powertrain: .diesel)
+    let sedan = Sedan(make: "AMC", model: "Gremlin", powertrain: .gasoline)
+    let truck = Truck(make: "Tesla", model: "Cyber Truck", powertrain: .electric)
+    let econo = Sedan(make: "EcoDrive", model: "E-20", powertrain: .hybrid)
+    
+    var vehicles: [Vehicle] = []
+    vehicles.append(suv)
+    vehicles.append(sedan)
+    vehicles.append(truck)
+    vehicles.append(econo)
+    
+    // Use is to filter vehicle type
+    for vehicle in vehicles {
+        if vehicle is Truck {
+            print("Make: \(vehicle.make)")
+        }
+    }
+    
+   // Use where to filter vehicle type
+    for vehicle in vehicles where vehicle is Sedan {
+        print("Sedan: \(vehicle.model)")
+    }
+    
+    // Downcasting parent type to Sedan type with as keyword
+    for vehicle in vehicles {
+        if let sedan = vehicle as? Sedan {
+            print("Sedan - make: \(sedan.make), model: \(sedan.model), powertrain: \(sedan.powertrain) ")
+        }
+    }
+
+   // Use is to filter type
+    for vehicle in vehicles {
+        if vehicle is Sedan {
+            print("Sedan - make: \(vehicle.make), model: \(vehicle.model), powertrain: \(vehicle.powertrain) ")
+        }
+    }
+}
+
+makeVehicle()
+```
 
 
 6. Network
@@ -369,6 +493,12 @@ sportCar.race()
 * Put
 * Patch         // Analogous with update
 * Delete
+
+6.2 URLSession
+
+6.3 URLRequest
+
+
 
 
 7. Lazy Evaluation
@@ -388,3 +518,124 @@ let array = [1, 2, 3, 4]
 let last = array.lazy.map({$0 * 3}).last!
 print(last)
 ```
+
+8. Algorithms
+
+8.1 Sorting
+
+8.1.1 Sort Copy of Input
+
+Algorithm:
+* Create an empty array named sorted.
+* Find the smallest element in the input array.
+* Remove the smallest element from the input array.
+* Append this element to the sorted array.
+* Repeat until there are no more elements in the input array.
+
+<p align="center">
+  <img src="https://github.com/jaminyah/drawio/blob/master/img/sort/sort_copy.svg" alt="sort algo" /> 
+</p>
+
+Consider input array = [4, 9, 2, 6, 5] <br/>
+
+end of loop - 1: <br/>
+input array = [4, 9, 6, 5] <br/>
+sorted array =  [ 2 ] <br/>
+
+end of loop - 2:
+input array = [ 9, 6, 5] <br/>
+sorted array = [ 2, 4 ] <br/>
+
+end of loop - 3:
+input array = [ 9, 6 ] <br/>
+sorted array = [ 2, 4, 5 ] <br/>
+
+end of loop - 4:
+input array = [ 9 ] <br/>
+sorted array = [ 2, 4, 5, 6 ] <br/>
+
+end of loop - 5:
+input array = [] <br/>
+sorted array = [ 2, 4, 5, 6, 9] <br/>
+
+```swift
+/*
+ Language: Swift 4.2
+ 
+ Sort Algorithm:
+ 1. Create an empty array named sorted.
+ 2. Find the smallest element in the input array.
+ 3. Remove the smallest element from the input array.
+ 4. Append this element to the sorted array.
+ 5. Repeat until there are no more elements in the input array.
+ 
+ Performance:
+ Time complexity: O(n^2)
+ Space complexity: O(n)
+ 
+*/
+
+import Foundation
+
+func sort_copy(array: [Int]) -> [Int] {
+    var copy = array
+    var sorted: [Int] = []
+    var minIndex: Int
+    var copyCount = copy.count
+    
+    while copyCount > 0 {
+        minIndex = 0
+        for i in (0 ..< copyCount) {
+            if copy[i] < copy[minIndex] {
+                minIndex = i
+            }
+        }
+        sorted.append(copy[minIndex])
+        copy.remove(at: minIndex)
+        copyCount = copy.count                  // Avoid multiple computation of count
+    }
+    return sorted
+}
+
+let a = [7, 4, 9, 2]
+let result = sort_copy(array: a)
+print(result)
+```
+
+
+
+9. Design Patterns
+
+9.1 Singleton
+```swift
+import Foundation
+
+enum LoginState: String {
+    case loggedIn = "LoggedIn"
+    case loggeout = "LoggedOut"
+}
+
+class LoginSingleton {
+    
+    static let shared = LoginSingleton()
+    private init() {}
+    
+    var loginState: LoginState = .loggeout
+    
+    func login(_ loginState: LoginState) {
+        self.loginState = loginState
+    }
+}
+
+let appLogin = LoginSingleton.shared
+appLogin.login(.loggedIn)
+
+let networkLogin = LoginSingleton.shared
+print("Login status: \(networkLogin.loginState.rawValue)")
+
+networkLogin.login(.loggeout)
+
+print("Login status: \(appLogin.loginState.rawValue)")
+```
+
+9.2 Thread-safe Singleton
