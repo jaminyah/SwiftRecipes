@@ -632,6 +632,48 @@ print(result)
 ```
 
 8.1.3 Selection Sort
+
+Algorithm <br/>
+1. Compare element at index 0 with element at index 1
+1.1. If element at index 1 is less than element at index 0, swap the elements
+1.2. Else, compare element at index 0 with element at index 2 ... array length
+
+2. Compare element at index 1 with element at index 2
+2.1. If element at index 2 is less than element at index 1, swap the elements
+2.2. Else, compare element at index 1 with element at index 3 ... array length
+
+3. Compare element at index with element at index + 1 until to the array length
+
+<p align="center">
+  <img src="https://github.com/jaminyah/drawio/blob/master/img/sort/selection_sort.svg" alt="sort algo" /> 
+</p>
+
+Consider, input array = [25, 13, 41, 32, 66, 14, 50]
+
+loop - 1: <br/>
+25 and 13 are swapped <br/>
+a = [13, 25, 41, 32, 66, 14, 50] <br/>
+
+loop - 2: <br/>
+25 and 14 are swapped <br/>
+a = [13, 14, 41, 32, 66, 25, 50] <br/>
+
+loop - 3: <br/> 
+41 and 25 are swapped <br/>
+a = [13, 14, 25, 32, 66, 41, 50] <br/>
+
+loop - 4: <br/>
+32 needs no swap <br/>
+a = [13, 14, 25, 32, 66, 41, 50] <br/>
+
+loop - 5: <br/>
+66 and 41 are swapped <br/>
+a = [13, 14, 25, 32, 41, 66, 50] <br/>
+
+loop - 6: <br/>
+66 and 50 are swapped <br/>
+a = [13, 14, 25, 32, 41, 50, 66] <br/>
+
 ```swift
 /*
  * Selection Sort Algorith
@@ -658,13 +700,13 @@ sort_selection(&a)
 print(a)
 ```
 
-8.1.4 Selection Sort - Generic
+8.1.4 Selection Sort - Generic, Version 1
 ```swift
 func sort_selection<T: Comparable>(_ array: inout [T]) {
     var temp: T
     
     for i in (0 ..< array.count - 1) {
-        for j in ( i+1 ..< array.count) {
+        for j in (i + 1 ..< array.count) {
             if array[j] < array[i] {
                 temp = array[i]
                 array[i] = array[j]
@@ -675,6 +717,30 @@ func sort_selection<T: Comparable>(_ array: inout [T]) {
 }
 
 var a = [40, 11, 8, 23, 9]
+sort_selection(&a)
+print(a)
+```
+
+8.1.5 Selection Sort - Generic, Version 2
+```swift
+func sort_selection<T: Comparable>(_ array: inout [T]) {
+    var temp: T
+    var j: Int
+    
+    for i in (0 ..< array.count - 1) {
+        j = i + 1
+        while ( j < array.count) {
+            if array[j] < array[i] {
+                temp = array[i]
+                array[i] = array[j]
+                array[j] = temp
+            }
+            j += 1
+        }
+    }
+}
+
+var a = [11, 11, 8, 23, 9]
 sort_selection(&a)
 print(a)
 ```
