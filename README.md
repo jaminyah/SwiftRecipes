@@ -581,18 +581,16 @@ func sort_copy(array: [Int]) -> [Int] {
     var copy = array
     var sorted: [Int] = []
     var minIndex: Int
-    var copyCount = copy.count
     
-    while copyCount > 0 {
+    while copy.count > 0 {
         minIndex = 0
-        for i in (0 ..< copyCount) {
+        for i in (0 ..< copy.count) {
             if copy[i] < copy[minIndex] {
                 minIndex = i
             }
         }
         sorted.append(copy[minIndex])
         copy.remove(at: minIndex)
-        copyCount = copy.count                  // Avoid multiple computation of count
     }
     return sorted
 }
@@ -634,15 +632,15 @@ print(result)
 8.1.3 Selection Sort
 
 Algorithm <br/>
-1. Compare element at index 0 with element at index 1
-1.1. If element at index 1 is less than element at index 0, swap the elements
-1.2. Else, compare element at index 0 with element at index 2 ... array length
+1. Compare element at index 0 with element at index 1 <br/>
+1.1. If element at index 1 is less than element at index 0, swap the elements <br/>
+1.2. Else, compare element at index 0 with element at index 2 ... array length <br/>
 
-2. Compare element at index 1 with element at index 2
-2.1. If element at index 2 is less than element at index 1, swap the elements
-2.2. Else, compare element at index 1 with element at index 3 ... array length
+2. Compare element at index 1 with element at index 2 <br/>
+2.1. If element at index 2 is less than element at index 1, swap the elements <br/>
+2.2. Else, compare element at index 1 with element at index 3 ... array length <br/>
 
-3. Compare element at index with element at index + 1 until to the array length
+3. Compare element at index with element at index + 1 until to the array length <br/>
 
 <p align="center">
   <img src="https://github.com/jaminyah/drawio/blob/master/img/sort/selection_sort.svg" alt="sort algo" /> 
@@ -744,6 +742,52 @@ var a = [11, 11, 8, 23, 9]
 sort_selection(&a)
 print(a)
 ```
+
+8.1.6 Insertion Sort
+```swift
+func insertion_sort(_ array: inout [Int]) {
+    var temp: Int
+    var j: Int
+    
+    for i in (1 ..< array.count) {
+        j = i
+        while array[j - 1] > array[j] {
+            temp = array[j]
+            array[j] = array[j - 1]
+            array[j - 1] = temp
+            j -= 1
+        }
+    }
+}
+
+var a = [ 9, 36, 21, 22, 16, 10]
+insertion_sort(&a)
+print(a)
+```
+
+8.1.7 Insertion Sort - Generic
+```swift
+func insertion_sort<T: Comparable>(_ array: inout [T]) {
+    var temp: T
+    var j: Int
+    
+    for i in (1 ..< array.count) {
+        j = i
+        while array[j - 1] > array[j] {
+            temp = array[j]
+            array[j] = array[j - 1]
+            array[j - 1] = temp
+            j -= 1
+        }
+    }
+}
+
+var a = [ 9, 36, 21, 22, 16, 10]
+insertion_sort(&a)
+print(a)
+```
+
+
 
 9. Design Patterns
 
