@@ -612,18 +612,16 @@ func sort_copy<T: Comparable>(array: [T]) -> [T] {
     var copy = array
     var sorted: [T] = []
     var minIndex: Int
-    var copyCount = copy.count
     
-    while copyCount > 0 {
+    while copy.count > 0 {
         minIndex = 0
-        for i in (0 ..< copyCount) {
+        for i in (0 ..< copy.count) {
             if copy[i] < copy[minIndex] {       // Comparable protocol
                 minIndex = i
             }
         }
         sorted.append(copy[minIndex])
         copy.remove(at: minIndex)
-        copyCount = copy.count
     }
     return sorted
 }
@@ -633,7 +631,53 @@ let result = sort_copy(array: a)
 print(result)
 ```
 
+8.1.3 Selection Sort
+```swift
+/*
+ * Selection Sort Algorith
+ *
+ * Programming language: Swift 4.2
+ */
 
+func sort_selection(_ array: inout [Int]) {
+    var temp: Int
+    
+    for i in (0 ..< array.count - 1) {
+        for j in ( i+1 ..< array.count) {
+            if array[j] < array[i] {
+                temp = array[i]
+                array[i] = array[j]
+                array[j] = temp
+            }
+        }
+    }
+}
+
+var a = [43, 11, 8, 23, 9]
+sort_selection(&a)
+print(a)
+```
+
+8.1.4 Selection Sort - Generic
+```swift
+func sort_selection<T: Comparable>(_ array: inout [T]) {
+    var temp: T
+    
+    for i in (0 ..< array.count - 1) {
+        for j in ( i+1 ..< array.count) {
+            if array[j] < array[i] {
+                temp = array[i]
+                array[i] = array[j]
+                array[j] = temp
+            }
+        }
+    }
+}
+
+var a = [40, 11, 8, 23, 9]
+sort_selection(&a)
+print(a)
+```
 
 9. Design Patterns
 
