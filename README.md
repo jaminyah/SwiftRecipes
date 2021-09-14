@@ -787,6 +787,46 @@ insertion_sort(&a)
 print(a)
 ```
 
+8.1.8 Bubble Sort
+```swift
+func bubbleSort(_ array: inout [Int]) {
+    var temp: Int
+
+    for i in (0 ..< array.count) {
+        for j in (0 ..< array.count - 1 - i) {
+            if array[j] > array[j + 1] {
+                temp = array[j]
+                array[j] = array[j + 1]
+                array[j + 1] = temp
+            }
+        }
+    }
+}
+
+var a = [5, 3, 1, 2, 6,4]
+bubbleSort(&a)
+print(a)
+```
+8.1.9 Bubble Sort - Generic
+```swift
+func bubbleSort<T: Comparable>(_ array: inout [T]) {
+    var temp: T
+
+    for i in (0 ..< array.count) {
+        for j in (0 ..< array.count - 1 - i) {
+            if array[j] > array[j + 1] {
+                temp = array[j]
+                array[j] = array[j + 1]
+                array[j + 1] = temp
+            }
+        }
+    }
+}
+
+var a = [25, 33, 11, 29, 17, 24]
+bubbleSort(&a)
+print(a)
+```
 
 
 9. Design Patterns
