@@ -4,6 +4,7 @@ References:
 ```bash
 1. Swift Functional Programming
 2. Programming in Smalltalk, TR87-023, April 15, 1987
+3. https://theswiftdev.com/lazy-initialization-in-swift/
 ```
 
 ```bash
@@ -30,6 +31,10 @@ References:
 10. Properties
 10.1 Stored Properties
 10.2 Computed Properties
+11. UIKit
+11.1 Closures
+
+
 ```
 
 1. Command Line Threading - Linux
@@ -503,6 +508,33 @@ makeVehicle()
 
 7. Lazy Evaluation
 
+7.1 Avoid using implicitly unwrapped optionals in UIKit ViewController
+```swift
+//  Use lazy var instead of implicity unwrapped optionals
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    lazy var label: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+
+    override func loadView() {
+        super.loadView()
+        self.view.addSubview(self.label)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view, typically from a nib.
+        self.label.text = "Hello, World!"
+        self.label.textColor = .black
+        self.label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        self.label.center = CGPoint(x: 160, y: 285)
+        self.label.textAlignment = .center
+    }
+}
+```
+
 Use the map function to multiple each value in an array by 3, then extract the last element. Eager evaluation results in all elements being processed
 then the last element is returned.
 ```swift
@@ -966,3 +998,165 @@ print("Login status: \(appLogin.loginState.rawValue)")
 ```
 
 9.2 Thread-safe Singleton
+
+
+10. Properties
+
+
+11. UIKit
+
+11.1 Add UILabel - Programmatic
+```swift
+//  Reference:
+//  https://stackoverflow.com/questions/24081731/how-to-create-uilabel-programmatically-using-swift
+
+//  ViewLabel.swift
+
+import UIKit
+
+class ViewLabel: UILabel {
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        initLabel()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        initLabel()
+    }
+    
+    func initLabel() {
+        self.textColor = .black
+        self.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        self.textAlignment = .center
+    }
+}
+
+// ViewController.swift
+// Reference:
+// https://theswiftdev.com/lazy-initialization-in-swift/
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    var viewLabel: UILabel = ViewLabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+    var viewLabel2: UILabel = ViewLabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+ 
+    override func loadView() {
+        super.loadView()
+        self.view.addSubview(viewLabel)
+        self.view.addSubview(viewLabel2)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        viewLabel.text = "Hello, World!"
+        viewLabel.center = CGPoint(x: 160, y: 285)
+        
+        viewLabel2.text = "Hello, Label!"
+        viewLabel2.center = CGPoint(x: 160, y: 385)
+    }
+}
+```
+
+11.2 Add UILabel with Closure
+
+```swift
+//  Reference:
+//  https://theswiftdev.com/lazy-initialization-in-swift/
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    // self-executing closure
+    lazy var label: UILabel = {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.text = "Hello, World!"
+        label.center = CGPoint(x: 160, y: 285)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    override func loadView() {
+        super.loadView()
+        
+        // [self label] executes closure
+        self.view.addSubview(self.label)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+    }
+}
+```
+
+11.3 Factory method of Initialization
+```swift
+//
+// Reference: https://theswiftdev.com/lazy-initialization-in-swift/
+//
+import UIKit
+
+class ViewController: UIViewController {
+    
+    lazy var label: UILabel = self.createUILabel()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.addSubview(self.label)
+    }
+    
+    private func createUILabel() -> UILabel {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.text = "Hello, World!"
+        label.center = CGPoint(x: 160, y: 285)
+        label.textAlignment = .center
+        return label
+    }
+}
+```
+
+11.4 Static Factory Initializer
+```swift
+//
+// Reference: https://theswiftdev.com/lazy-initialization-in-swift/
+//
+import UIKit
+
+class ViewController: UIViewController {
+    
+    lazy var label = UILabel.createUILabel()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.addSubview(self.label)
+    }
+}
+
+extension UILabel {
+    static func createUILabel() -> UILabel {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
+
+
+        // programmatically instantiating UILabel set to false
+        // default is true.
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        label.text = "Hello, World!"
+        label.center = CGPoint(x: 160, y: 285)
+        label.textAlignment = .center
+        return label
+    }
+}
+```
