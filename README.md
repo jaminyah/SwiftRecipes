@@ -5,6 +5,7 @@ References:
 1. Swift Functional Programming
 2. Programming in Smalltalk, TR87-023, April 15, 1987
 3. https://theswiftdev.com/lazy-initialization-in-swift/
+4. https://www.uraimo.com/2017/05/07/all-about-concurrency-in-swift-1-the-present/
 ```
 
 ```bash
@@ -31,10 +32,10 @@ References:
 10. Properties
 10.1 Stored Properties
 10.2 Computed Properties
-11. UIKit
-11.1 Closures
-
-
+11 Strings
+12 Arrays
+13 Closures
+14 UIKit
 ```
 
 1. Command Line Threading - Linux
@@ -78,6 +79,119 @@ bkgThread.start()
 // Keep the main thread alive so that the program does not exit.
 RunLoop.current.run()
 ```
+
+1.2 Basic Threading
+
+1.2.1 Extending the Thread base class
+
+Thread Properties
+```swift
+// Obtaining thread properties
+
+import Foundation
+
+class BasicThread: Thread {
+    
+    // Starting the thread executes the main function
+    override func main() {
+        print("Starting thread execution ...")
+        Thread.sleep(forTimeInterval: 10)
+        print("Thread slept for  10 seconds, and exited.")
+    }
+}
+
+// Instantiating the thread
+var basicThread = BasicThread()
+print("Is main thread: \(basicThread.isMainThread)")
+
+basicThread.name = "t1"
+if let tid = basicThread.name {
+    print("Thread id: \(tid)")
+}
+
+//basicThread.start()
+```
+Output:
+```bash
+Is main thread: false
+Thread id: t1
+```
+
+Starting the Thread
+```swift
+// Executing the thread main function
+
+import Foundation
+
+class BasicThread: Thread {
+    
+    // Starting the thread executes the main function
+    override func main() {
+        print("Starting thread execution ...")
+        Thread.sleep(forTimeInterval: 10)
+        print("Thread slept for 10 seconds, and exited.")
+    }
+}
+
+// Instantiating the thread
+var basicThread = BasicThread()
+print("Is main thread: \(basicThread.isMainThread)")
+
+basicThread.name = "t1"
+if let tid = basicThread.name {
+    print("Thread id: \(tid)")
+}
+
+// Start thread execution
+basicThread.start()
+```
+Output:
+```bash
+Is main thread: false
+Thread id: t1
+Starting thread execution ...
+Thread slept for 10 seconds, and exited.
+```
+
+Main Thread Properties
+```swift
+import Foundation
+
+class BasicThread: Thread {
+    
+    // Starting the thread executes the main function
+    override func main() {
+        print("Starting thread execution ...")
+        Thread.sleep(forTimeInterval: 10)
+        print("Thread slept for 10 seconds, and exited.")
+    }
+}
+
+// Instantiating the thread
+var basicThread = BasicThread()
+print("Is main thread: \(basicThread.isMainThread)")
+
+// Obtain main thread property
+print("Main thread: \(Thread.isMainThread)")
+
+basicThread.name = "t1"
+if let tid = basicThread.name {
+    print("Thread id: \(tid)")
+}
+
+// Start thread execution
+basicThread.start()
+```
+
+Output:
+```bash
+Is main thread: false
+Main thread: true
+Thread id: t1
+Starting thread execution ...
+Thread slept for 10 seconds, and exited.
+```
+
 
 2. Functional Programming
 
@@ -1002,6 +1116,335 @@ print("Login status: \(appLogin.loginState.rawValue)")
 
 10. Properties
 
+Swift instance properties come in three flavors. Stored, computed and type properties. Stored properties can be read-write variables that are declared with the var keyword. Stored properties can also be <em>constant stored property </em> and is declared with the <em>let</em> keyword. Type properties are associated with the type and not a particular instance of the type.
+
+10.1 Stored Property
+ A stored property is a variable or constant that is declared in a class, struct or enum. Stored properties are assigned either during the execution of the init method or by assigning a value when the property is declared. "Constant properties must always have a value before initialization is complete." As a result they can be declared with the lazy modifier.
+
+> Stored properties can only be associated with classes and structures.
+
+10.2 Lazy Stored Property
+"A lazy stored property is a property whose initial value isn't calculated until the first time it is used." Lazy properties increase performance in cases where the property is rarely read.
+> Lazy properties are always declared as a variable, with keyword var. This is because <em>initialization</em> of the object must be complete before the lazy property can be accessed.
+
+10.2.1 Computed properties 
+Computed properties can be associated with classes, structures, and enumerations (enums).
+> Computed properties cannot be designated as lazy.
+```swift
+//  Polynomial.swift
+//  LazyApp
+//  Created on 9/17/21.
+
+import Foundation
+
+class Polynomial {
+    
+    var x: Int      // stored property, x is assigned a value during init method execution
+    var y: Int      // stored property, y is assigned a value during init method execution
+    
+    // Error: computed property cannot be lazy
+    lazy var fx: Int {
+        print("fx compute")
+        return x * x + y
+    }
+       
+    init(x: Int, y: Int) {
+        print("init x, y")
+        self.x = x
+        self.y = y
+    }
+}
+```
+10.2.2 Lazy property with Immediately Invoked Closure
+```swift
+//  Polynomial.swift
+//  LazyApp
+//  Created on 9/17/21.
+
+import Foundation
+
+class Polynomial {
+    
+    var x: Int
+    var y: Int
+    var z: Double = 3.8         // z is assigned at var declaration
+    
+    // computed property
+    var fx: Int {
+        print("fx compute")
+        return x * x + y
+    }
+    
+    // lazy applied to immediately invoked closure
+    lazy var gx: Int = {
+        print("gx compute")
+        return 2 * x + y
+    }()
+    
+    init(x: Int, y: Int) {
+        print("init x, y")
+        self.x = x
+        self.y = y
+    }
+}
+
+//  ViewController.swift
+//  LazyApp
+//  Created by macbook on 9/16/21.
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    let poly = Polynomial(x: 4, y: 3)
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let fx = poly.fx
+        print("view controller fx: \(fx)")
+        
+       // let gx = poly.gx
+       // print("view controller gx: \(gx)")
+    }
+}
+```
+
+Since, gx is not used, it is not computed.
+```bash
+// Output:
+init x, y
+fx compute
+view controller fx: 19
+```
+
+10.2.3 Compute lazy property on first use
+```swift
+//  Polynomial.swift
+//  LazyApp
+//
+//  Created on 9/17/21.
+
+import Foundation
+
+class Polynomial {
+    
+    var x: Int
+    var y: Int
+    
+    // computed property
+    var fx: Int {
+        print("fx compute")
+        return x * x + y
+    }
+    
+    // lazy applied to immediately invoked closure
+    lazy var gx: Int = {
+        print("gx compute")
+        return 2 * x + y
+    }()
+    
+    init(x: Int, y: Int) {
+        print("init x, y")
+        self.x = x
+        self.y = y
+    }
+}
+
+//  ViewController.swift
+//  LazyApp
+//  Created by macbook on 9/16/21.
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    let poly = Polynomial(x: 4, y: 3)
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let fx = poly.fx
+        print("view controller fx: \(fx)")
+        
+       let gx = poly.gx
+       print("view controller gx: \(gx)")
+    }
+}
+```
+
+Since, gx is used, it is computed.
+```bash
+init x, y
+fx compute
+view controller fx: 19
+gx compute
+view controller gx: 11
+```
+10.2.4 Lazy computed properties are only calcuated once.
+```swift
+//  Polynomial.swift
+//  LazyApp
+//  Created on 9/17/21.
+
+import Foundation
+
+class Polynomial {
+    
+    var x: Int
+    var y: Int
+    
+    // computed property
+    var fx: Int {
+        print("fx compute")
+        return x * x + y
+    }
+    
+    // lazy applied to immediately invoked closure
+    lazy var gx: Int = {
+        print("gx compute")
+        return 2 * x + y
+    }()
+    
+    init(x: Int, y: Int) {
+        print("init x, y")
+        self.x = x
+        self.y = y
+    }
+}
+
+/  ViewController.swift
+//  LazyApp
+//  Created on 9/16/21.
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    let poly = Polynomial(x: 4, y: 3)
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let fx = poly.fx
+        print("view controller fx: \(fx)")
+        
+        let gx = poly.gx
+        print("view controller gx: \(gx)")
+        
+        // lazy property is only computed once
+        poly.x = 14
+        poly.y = 13
+        
+        let gx2 = poly.gx
+        print("view controller gx2: \(gx2)")
+    }
+}
+```
+
+Output:
+```bash
+init x, y
+fx compute
+view controller fx: 19
+gx compute
+view controller gx: 11
+view controller gx2: 11
+```
+
+10.2.5 Computed properties are computed on each call
+```swift
+//  Polynomial.swift
+//  LazyApp
+//  Created on 9/17/21.
+
+import Foundation
+
+class Polynomial {
+    
+    var x: Int
+    var y: Int
+    
+    // computed property
+    var fx: Int {
+        print("fx compute")
+        return x * x + y
+    }
+    
+    // lazy applied to immediately invoked closure
+    lazy var gx: Int = {
+        print("gx compute")
+        return 2 * x + y
+    }()
+    
+    var hx: Int {
+        return 2 * x + y + 7
+    }
+    
+    init(x: Int, y: Int) {
+        print("init x, y")
+        self.x = x
+        self.y = y
+    }
+}
+```
+Output:
+```bash
+init x, y
+fx compute
+view controller fx: 19
+gx compute
+view controller gx: 11
+view controller hx: 18
+
+Change x, y
+fx compute
+view controller fx: 209
+view controller gx: 11
+view controller hx: 48
+```
+
+
+10.2.6 Type Property
+
+* Stored type properties must always have a default value
+* Stored type properties are lazily initialized on their first access and so do not require the lazy keyword
+* Stored type properties are thread-safe and so can be accessed by multiple threads at the same time.
+* Stored type properties are declared as part to the type's definition.
+* Stored type properties are declared with the static keyword.
+* Computed type property can be declared with the class keyword to allow subclasses to override the implementation.
+
+10.2.7 Getters and Setters
+
+10.2.7.1 Computed Property with Custom Getter and Setter
+Standard Syntax
+```swift
+var <property-name>: <data-type> {
+    get {
+
+    }
+    set (<newValue-implicit> or <customName>) {
+
+    }
+}
+```
+
+```swift
+struct Position {
+    x: Double = 0.0
+    y: Double = 0.0
+    var coordinate: String {
+        get {
+
+        }
+        set (newValue) {
+
+        }
+    }
+}
+```
+
+
 
 11. UIKit
 
@@ -1009,7 +1452,6 @@ print("Login status: \(appLogin.loginState.rawValue)")
 ```swift
 //  Reference:
 //  https://stackoverflow.com/questions/24081731/how-to-create-uilabel-programmatically-using-swift
-
 //  ViewLabel.swift
 
 import UIKit
@@ -1096,11 +1538,10 @@ class ViewController: UIViewController {
 }
 ```
 
-11.3 Factory method of Initialization
+10.3 Factory method of Initialization
 ```swift
-//
 // Reference: https://theswiftdev.com/lazy-initialization-in-swift/
-//
+
 import UIKit
 
 class ViewController: UIViewController {
@@ -1125,9 +1566,9 @@ class ViewController: UIViewController {
 }
 ```
 
+
 11.4 Static Factory Initializer
 ```swift
-//
 // Reference: https://theswiftdev.com/lazy-initialization-in-swift/
 //
 import UIKit
@@ -1146,11 +1587,9 @@ extension UILabel {
     static func createUILabel() -> UILabel {
         let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
 
-
         // programmatically instantiating UILabel set to false
         // default is true.
         label.translatesAutoresizingMaskIntoConstraints = false
-
         label.textColor = .black
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.text = "Hello, World!"
@@ -1160,3 +1599,5 @@ extension UILabel {
     }
 }
 ```
+
+
