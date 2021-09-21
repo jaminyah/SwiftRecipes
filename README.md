@@ -401,7 +401,176 @@ Final sum: 2000
 ```
 
 1.3.2 Recursive Lock - NSRecursive Lock
-Unlike NSLock, NSRecursive lock allow the same thread to acquire the lock multiple times.
+Unlike NSLock, NSRecursive lock allows the same thread to acquire the lock multiple times without creating a deadlock condition.
+```swift
+import Foundation
+
+let recursiveLock = NSRecursiveLock()
+var a = 2
+var b = 4
+var sum = 0
+
+func product() {
+    recursiveLock.lock()
+    print("Acquiring lock again.")
+    sum += a * b
+    recursiveLock.unlock()
+    print("Function releases lock.")
+}
+
+var thread = Thread {
+ 
+    print("Thread acquires lock.")
+    recursiveLock.lock()
+    sum += a + b
+    product()
+    recursiveLock.unlock()
+    print("Thread execution is complete.")
+}
+
+thread.start()
+Thread.sleep(forTimeInterval: 3)
+print("Sum: \(sum)")
+```
+
+1.3.3 NSConditionLock
+
+NSConditionLock object can be used to acquire and release a lock when program defined conditions are met. Condition is of type Int.
+
+Declaration
+```bash
+class NSConditionLock: NSObject
+```
+```swift
+import Foundation
+
+let EMPTY = 0
+let FULL = 5
+
+let fuelTank = NSConditionLock(condition: EMPTY)
+var fuelQuantity = 0
+
+class FuelThread: Thread {
+    
+    override func main(){
+ 
+        print("Filling the tank ...")
+        fuelTank.lock(whenCondition: EMPTY)         // Acquire the lock when condition is EMPTY
+        
+        for gallon in 1 ..< 6 {
+            print("Fuel quantity: \(gallon)")
+            fuelQuantity = gallon
+        }
+        print()
+        fuelTank.unlock(withCondition: FULL)        // Release the lock and set the condition to FULL
+ 
+    }
+}
+
+class DriveThread: Thread {
+    
+    override func main(){
+        print("Waiting for fuel ...")
+        fuelTank.lock(whenCondition: FULL)          // Acquire the lock when condition is FULL
+        
+        for miles in 1 ..< 6 {
+            fuelQuantity -= 1
+            print("Miles driven: \(miles), fuel remaining: \(fuelQuantity)")
+ 
+        }
+        print()
+        fuelTank.unlock(withCondition: EMPTY)       // Release the lock and set the condition to EMPTY
+    }
+}
+
+let fueling = FuelThread()
+let driving = DriveThread()
+
+fueling.start()
+driving.start()
+```
+
+1.3.4 NSCondition
+
+> "A condition object acts as both a lock and a checkpoint in a given thread. The lock protects your code while it tests the condition and performs the task triggered by the condition. The checkpoint behavior requires that the condition be true before the thread proceeds with its task. While the condition is not true, the thread blocks. It remains blocked until another thread signals the condition object." 
+
+```swift
+import Foundation
+
+let condition = NSCondition()
+var readyState = false
+var bulletCount = 0
+
+class MazagineLoader: Thread {
+ 
+    override func main() {
+        print("Magazine is Loading ...")
+        
+        condition.lock()
+        while readyState == true {
+            condition.wait()
+        }
+        
+        for _ in (0 ..< 20) {
+            bulletCount += 1
+            print("loader - bullet count: \(bulletCount)")
+            
+            if bulletCount % 10 == 0 {
+                readyState = true
+                condition.signal()
+                condition.unlock()
+                break
+            }
+        }
+    }
+}
+
+class Cannon: Thread {
+    
+    override func main() {
+        condition.lock()
+        while readyState == false {
+            print("Cannon is waiting ...")
+            condition.wait()
+        }
+        
+        print("Cannon is Firing ...")
+        for _ in (0 ..< 5) {
+            bulletCount -= 1
+            print("cannon - bullet count: \(bulletCount)")
+        }
+        readyState = false
+        condition.unlock()
+    }
+}
+
+let loader = MazagineLoader()
+let cannon = Cannon()
+loader.start()
+cannon.start()
+```
+Output:
+```bash
+Magazine is Loading ...
+Cannon is waiting ...
+loader - bullet count: 1
+loader - bullet count: 2
+loader - bullet count: 3
+loader - bullet count: 4
+loader - bullet count: 5
+loader - bullet count: 6
+loader - bullet count: 7
+loader - bullet count: 8
+loader - bullet count: 9
+loader - bullet count: 10
+Cannon is Firing ...
+cannon - bullet count: 9
+cannon - bullet count: 8
+cannon - bullet count: 7
+cannon - bullet count: 6
+cannon - bullet count: 5
+```
+
 
 
 1.3.2 Semaphore
