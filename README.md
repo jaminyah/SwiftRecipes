@@ -6,36 +6,38 @@ References:
 2. Programming in Smalltalk, TR87-023, April 15, 1987
 3. https://theswiftdev.com/lazy-initialization-in-swift/
 4. https://www.uraimo.com/2017/05/07/all-about-concurrency-in-swift-1-the-present/
+5. http://www.thinkingparallel.com/2006/09/09/mutual-exclusion-with-locks-an-introduction/
 ```
 
 ```bash
 1. Threading
-2. Functional Programming
-3. Comparison
-4. Data Types
-5. Protocols
-5.1 Protocol Declaration
-5.2 Protocol Extension
-5.2.1 Protocol Extension - Computed Properties
-6. Network
-6.1 URLSession
-6.2 URLRequest
-6.3 URLSessionDataTask
-6.2 Network Layer Design
-7. Lazy Evaluation
-8. Algorithms
-8.1 Sorts
-8.2 Search
-9. Design Patterns
-9.1 Singleton
-9.2 Thread-safe Singleton
-10. Properties
-10.1 Stored Properties
-10.2 Computed Properties
-11 Strings
-12 Arrays
-13 Closures
-14 UIKit
+2. NSOperationQueue
+3. Functional Programming
+4. Comparison
+5. Data Types
+6. Protocols
+7.1 Protocol Declaration
+7.2 Protocol Extension
+7.2.1 Protocol Extension - Computed Properties
+8. Network
+8.1 URLSession
+8.2 URLRequest
+8.3 URLSessionDataTask
+9.2 Network Layer Design
+10. Lazy Evaluation
+11. Algorithms
+11.1 Sorts
+11.2 Search
+12. Design Patterns
+13.1 Singleton
+14.2 Thread-safe Singleton
+15. Properties
+15.1 Stored Properties
+15.2 Computed Properties
+16 Strings
+17 Arrays
+18 Closures
+19 UIKit
 ```
 
 1. Command Line Threading - Linux
@@ -192,10 +194,267 @@ Starting thread execution ...
 Thread slept for 10 seconds, and exited.
 ```
 
+1.3 Thread Synchronization
 
-2. Functional Programming
+Thread synchronization prevent corruption of data when that data is acted upon by multiple threads. The following software constructs facilitate thread synchronization: 
+* Mutex / Locks - lock(), unlock()
+* Semaphores - binary, counting
+* Condition Variables
+* Monitors - mutex + condition variable
 
-2.1 Higher Order Function
+1.3.1 Mutual Exclusion - mutex
+
+At the assembly language level, three steps are needed in order to increment the value of a variable. 
+* Step 1 - Load the value from the variable's memory address into a CPU register.
+* Step 2 - Increment the register value by 1
+* Stpe 3 - Write the updated register value into the variable's memory address.
+```bash
+// Assembly pseudocode for incrementing i
+mov i, R1
+add 1, R1
+mov R1, i
+```
+Increment variable on two threads without mutual exclusion.
+```swift
+// Increment variable on two threads
+
+import Foundation
+
+var sum = 0
+
+var t1 = Thread {
+    print("t1 initial sum: \(sum)")
+    sum += 1
+    print("t1 incremented sum: \(sum)")
+}
+
+var t2 = Thread {
+    print("t2 initial sum: \(sum)")
+    sum += 1
+    print("t2 incremented sum: \(sum)")
+}
+
+t1.start()
+t2.start()
+
+// wait for t1 and t2 to complete
+Thread.sleep(forTimeInterval: 4)
+print("Final sum: \(sum)")
+```
+Output: 
+```bash
+t1 initial sum: 0
+t2 initial sum: 0
+t1 incremented sum: 2
+t2 incremented sum: 2
+Final sum: 2
+```
+Increasing the expected count to 2000.
+```swift
+// Increment variable on two threads
+
+import Foundation
+
+var sum = 0
+
+var t1 = Thread {
+    print("t1 initial sum: \(sum)")
+    for _ in (0 ..< 1000) {
+        sum += 1
+    }
+    print("t1 incremented sum: \(sum)")
+}
+
+var t2 = Thread {
+    print("t2 initial sum: \(sum)")
+    for _ in (0 ..< 1000) {
+        sum += 1
+    }
+    print("t2 incremented sum: \(sum)")
+}
+
+t1.start()
+t2.start()
+
+// main thread sleeps
+Thread.sleep(forTimeInterval: 4)
+print("Final sum: \(sum)")
+```
+```bash
+t1 initial sum: 0
+t2 initial sum: 0
+t1 incremented sum: 1895
+t2 incremented sum: 1997
+Final sum: 1997
+```
+
+Implementing Mutual Exclusion with NSLock
+* Only one thread at a time can acquire the lock.
+* Only the thread acquired the lock can perform unlock.
+* Other threads will be blocked until the thread in unlocked.
+* Locks are <em>unfair</em>. Acquiring the lock is not based on any order.
+
+```swift
+// Increment variable on two threads with mutual exclusion
+// to obtain the expected value of sum.
+
+import Foundation
+
+var sum = 0
+let nslock = NSLock()
+
+var t1 = Thread {
+    print("t1 initial sum: \(sum)")
+    nslock.lock()
+
+    // increment sum 1000 times
+    for _ in (0 ..< 1000) {
+        sum += 1
+    }
+    nslock.unlock()
+    print("t1 incremented sum: \(sum)")
+}
+
+var t2 = Thread {
+    print("t2 initial sum: \(sum)")
+    nslock.lock()
+
+    // increment sum 1000 times
+    for _ in (0 ..< 1000) {
+        sum += 1
+    }
+    nslock.unlock()
+    print("t2 incremented sum: \(sum)")
+}
+
+t1.start()
+t2.start()
+
+// main thread sleeps
+Thread.sleep(forTimeInterval: 4)
+print("Final sum: \(sum)")
+```
+Output:
+```bash
+t1 initial sum: 0
+t2 initial sum: 0
+t1 incremented sum: 1000
+t2 incremented sum: 2000
+Final sum: 2000
+```
+
+Subclassing Thread class
+```swift
+import Foundation
+
+var sum = 0
+let nslock = NSLock()
+
+// subclassing requires overriding main()
+class MyThread: Thread {
+    var myText: String
+    
+    init(myText: String) {
+        self.myText = myText
+    }
+    
+    override func main() {
+        print("\(myText) \(sum)")
+        nslock.lock()
+        
+        // increment sum 1000 times
+        for _ in (0 ..< 1000) {
+            sum += 1
+        }
+        nslock.unlock()
+        print("t1 incremented sum: \(sum)")
+    }
+}
+
+var t2 = Thread {
+    print("t2 initial sum: \(sum)")
+    nslock.lock()
+    
+    // increment sum 1000 times
+    for _ in (0 ..< 1000) {
+        sum += 1
+    }
+    nslock.unlock()
+    print("t2 incremented sum: \(sum)")
+}
+
+let t1 = MyThread(myText: "t1 initial sum:")
+t1.start()
+t2.start()
+
+// main thread sleeps
+Thread.sleep(forTimeInterval: 4)
+print("Final sum: \(sum)")
+```
+Output:
+```bash
+t1 initial sum: 0
+t2 initial sum: 0
+t2 incremented sum: 1000
+t1 incremented sum: 2000
+Final sum: 2000
+```
+
+1.3.2 Recursive Lock - NSRecursive Lock
+Unlike NSLock, NSRecursive lock allow the same thread to acquire the lock multiple times.
+
+
+1.3.2 Semaphore
+
+Semaphores, developed by Dijkstra, provides access control to shared data. Semaphores are of two forms, Binary Semaphores and Counting Semaphores.
+
+
+
+
+
+2. NSOperationQueue
+```swift
+// Basic OperationQueue
+
+import Foundation
+
+class NetworkTask: Operation {
+    override func main() {
+        print("Executing a network task.")
+    }
+}
+
+class ImageFilterTask: Operation {
+    override func main() {
+        print("Executing an image filter task.")
+    }
+}
+
+let networkTask = NetworkTask()
+let filterImageTask = ImageFilterTask()
+
+networkTask.completionBlock = {
+    print("Network task is complete.")
+}
+
+filterImageTask.completionBlock = {
+    print("Image filter task is complete.")
+}
+
+let queue = OperationQueue()
+queue.addOperation(networkTask)
+queue.addOperation(filterImageTask)
+```
+Output:
+```bash
+Executing a network task.
+Executing an image filter task.
+Image filter task is complete.
+Network task is complete.
+```
+
+3. Functional Programming
+3.1 Higher Order Function
 
 These are functions that take a function as the argument or that return a function as the result.
 
@@ -1600,4 +1859,5 @@ extension UILabel {
 }
 ```
 
-
+18. Closures
+* Self is not needed when referencing instance properties.
