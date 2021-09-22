@@ -39,8 +39,18 @@ References:
 18 Closures
 19 UIKit
 ```
+1. Threading
 
-1. Command Line Threading - Linux
+Definitions
+
+* Race Condition: 
+
+* Deadlock: 
+
+* Thread-safety:
+
+
+1.1 Command Line Threading - Linux
 ```bash
 $ mkdir CLThread
 $ cd CLThread
@@ -202,7 +212,11 @@ Thread synchronization prevent corruption of data when that data is acted upon b
 * Condition Variables
 * Monitors - mutex + condition variable
 
+
+
 1.3.1 Mutual Exclusion - mutex
+
+A mutex is a object that can be used by a thread to prevent modification of code sections by another thread. It does this by providing a lock() and unlock() function. 
 
 At the assembly language level, three steps are needed in order to increment the value of a variable. 
 * Step 1 - Load the value from the variable's memory address into a CPU register.
@@ -401,6 +415,7 @@ Final sum: 2000
 ```
 
 1.3.2 Recursive Lock - NSRecursive Lock
+
 Unlike NSLock, NSRecursive lock allows the same thread to acquire the lock multiple times without creating a deadlock condition.
 ```swift
 import Foundation
@@ -575,8 +590,230 @@ cannon - bullet count: 5
 
 1.3.2 Semaphore
 
-Semaphores, developed by Dijkstra, provides access control to shared data. Semaphores are of two forms, Binary Semaphores and Counting Semaphores.
+Semaphores, developed by Dijkstra, provides <em>access control</em> to shared data. Semaphores are of two forms, Binary Semaphores and Counting Semaphores.
+Binary semaphore has a value that can range between 0 and 1. In this case the semaphore acts like a mutex lock. Counting semaphore is used to control access to resource that has multiple instances.
 
+Semaphores increment and decrement an integer value in order to provide access control of code blocks which are all described by the term critical section. In the case of a mutex only the thread that has acquired the lock, can release the lock. In the case of semaphores, however, if the count is greater that zero any thread can increment or decrement the semaphore count. Essential, mutexes allow only one thread to acquire a resource. Semaphores allow multiple threads to acquire resources if the resources are available.
+
+Issues with Semaphore
+Deadlock - 
+
+
+1.3.3 DispatchSemaphore instead of NSLock
+```swift
+// Replacing NSLock with DispatchSemaphore
+
+import Foundation
+
+var sum = 0
+
+// Only one thread can access the resource, sum
+let semaphore = DispatchSemaphore(value: 1)
+// let nslock = NSLock()
+
+var t1 = Thread {
+    print("t1 initial sum: \(sum)")
+   // nslock.lock()
+
+    // wait requests the resource
+    semaphore.wait()    // value-- = 1 locks resource, sum
+    
+    // increment sum 1000 times
+    for _ in (0 ..< 1000) {
+        sum += 1
+    }
+    //nslock.unlock()
+
+    // signal releases the resource
+    semaphore.signal()  // value++ = 1
+    print("t1 incremented sum: \(sum)")
+}
+
+var t2 = Thread {
+    print("t2 initial sum: \(sum)")
+    //nslock.lock()
+    semaphore.wait()    // wait results in value-- = 0 creating a lock on sum
+    
+    // increment sum 1000 times
+    for _ in (0 ..< 1000) {
+        sum += 1
+    }
+    //nslock.unlock()
+    semaphore.signal() // value++ makes resource available to other threads
+    print("t2 incremented sum: \(sum)")
+}
+
+t1.start()
+t2.start()
+
+// main thread sleeps
+Thread.sleep(forTimeInterval: 4)
+print("Final sum: \(sum)")
+```
+
+1.3.4 T2 Waits For T1 To Signal
+
+```swift
+import Foundation
+
+var buffer: [Int] = []
+
+// One thread has to increment value to 1
+let semaphore = DispatchSemaphore(value: 0)
+
+var t1 = Thread {
+    print("t1 is adding to the buffer.")
+    
+    // append to buffer 10 times
+    for item in (0 ..< 10) {
+        buffer.append(item)
+        print("item: \(item)")
+    }
+    
+    print("t1 sent signal.")
+    semaphore.signal()
+}
+
+// t2 waits for the semphore value to be incremented
+var t2 = Thread {
+    
+    print("t2 is waiting for a full buffer.")
+
+    // Value has to be greater than 0 for code execution
+    semaphore.wait()
+    
+    var j = 0
+    while j < buffer.count {
+        print("buffer: \(buffer[j])")
+        j += 1
+    }
+    print("t2 read the last item.")
+}
+
+t1.start()
+t2.start()
+```
+First Run:
+```bash
+t1 is adding to the buffer.
+item: 0
+item: 1
+item: 2
+item: 3
+item: 4
+item: 5
+item: 6
+item: 7
+item: 8
+item: 9
+t1 sent signal.
+t2 is waiting for a full buffer.
+buffer: 0
+buffer: 1
+buffer: 2
+buffer: 3
+buffer: 4
+buffer: 5
+buffer: 6
+buffer: 7
+buffer: 8
+buffer: 9
+t2 read the last item.
+```
+
+Second Run:
+```bash
+t1 is adding to the buffer.
+t2 is waiting for a full buffer.
+item: 0
+item: 1
+item: 2
+item: 3
+item: 4
+item: 5
+item: 6
+item: 7
+item: 8
+item: 9
+t1 sent signal.
+buffer: 0
+buffer: 1
+buffer: 2
+buffer: 3
+buffer: 4
+buffer: 5
+buffer: 6
+buffer: 7
+buffer: 8
+buffer: 9
+t2 read the last item.
+```
+
+1.3.5 Consuming the Buffer
+```swift
+import Foundation
+
+var buffer: [Int] = []
+
+let semaphore = DispatchSemaphore(value: 0)
+
+var t1 = Thread {
+    print("t1 is adding to the buffer.")
+    
+    // append to buffer 10 times
+    for item in (0 ..< 10) {
+        buffer.append(item * 10)
+        print("item: \(buffer[item])")
+    }
+    
+    print("t1 sent signal.")
+    semaphore.signal()
+}
+
+// t2 waits for the semphore value to be incremented
+var t2 = Thread {
+    
+    print("t2 is waiting for a full buffer.")
+    semaphore.wait()
+    
+    let j = 0
+    while buffer.count > 0 {
+        print("buffer[0]: \(buffer[j]), buffer size = \(buffer.count)")
+        buffer.remove(at: j)
+    }
+    print("buffer is empty.")
+}
+
+t1.start()
+t2.start()
+```
+
+```bash
+t1 is adding to the buffer.
+t2 is waiting for a full buffer.
+item: 0
+item: 10
+item: 20
+item: 30
+item: 40
+item: 50
+item: 60
+item: 70
+item: 80
+item: 90
+t1 sent signal.
+buffer[0]: 0, buffer size = 10
+buffer[0]: 10, buffer size = 9
+buffer[0]: 20, buffer size = 8
+buffer[0]: 30, buffer size = 7
+buffer[0]: 40, buffer size = 6
+buffer[0]: 50, buffer size = 5
+buffer[0]: 60, buffer size = 4
+buffer[0]: 70, buffer size = 3
+buffer[0]: 80, buffer size = 2
+buffer[0]: 90, buffer size = 1
+buffer is empty.
+```
 
 
 
