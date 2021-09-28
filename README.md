@@ -16,6 +16,7 @@ References:
 3. Functional Programming
 4. Comparison
 5. Data Types
+6. Static Keyword
 6. Property Observers
 6. Protocols
 7.1 Protocol Declaration
@@ -40,7 +41,10 @@ References:
 16 Strings
 17 Arrays
 18 Closures
-19 UIKit
+19 KVO / KVC
+20 UIKit
+21 XCTest
+22 XCUITest
 ```
 1. Threading
 
@@ -1435,6 +1439,150 @@ The <em>didSet</em> property observer is called immediately after the value is s
 
 Neither <em>willSet</em> or <em>didSet</em> is called during object initialization.
 
+
+x. Static Keyword
+x.1 static let / var
+
+* "static let" defines a read-only type property. It is a property that cannot be changed by instances of a class or struct. However, it is a property that is available to all instances of the associated class or struct.
+
+* "static var" defines a read-write type property. It is a property that is accessible to all instances of the associated class or struct. It can be described as global property associated with the class or struct type.
+
+* Static members are associated with the class or struct type and can only be used on the type.
+
+x.x Static Type Property - Class Declaration
+```swift
+import Foundation
+
+enum EmployeeStatus {
+    case FullTime
+    case Intern
+}
+
+class Employee {
+    static let company = "Acme Software"
+    static var status = EmployeeStatus.FullTime
+    
+    var firstName = "Mary"
+    var lastName = "Doe"
+    var division = String()
+    var department = String()
+    var empID = String()
+    let office = "Miami"
+}
+
+let employee = Employee()
+employee.firstName = "Alexy"
+employee.lastName = "Jones"
+employee.division = "Engineering"
+employee.department = "HR"
+employee.empID = "092316EH"
+
+
+// static member 'status' cannot be used on instance of type 'Employee'
+// print("employee: \(employee.status)")
+
+print("employee status: \(Employee.status)")
+
+// static member 'company' cannot be used on instance of type 'Employee'
+// print("employee: \(employee.company)")
+
+print("employee company: \(Employee.company)")
+
+// instance member 'office' cannot be used on type 'Employee'
+// print("employee office: \(Employee.office)")
+
+print("employee office: \(employee.office)")
+```
+
+
+x.2 Static Type Property - Struct Declaration
+```swift
+import Foundation
+
+struct TaskFeature {
+    static let department = "Engineering"
+    static var name = "3D Path Plot"
+    
+    var taskLeader = String()
+    var endDate: Date
+    var laborHours: Int
+    
+    init(taskLeader: String, laborHours: Int, endDate: Date) {
+        self.taskLeader = taskLeader
+        self.laborHours = laborHours
+        self.endDate = endDate
+    }
+    
+}
+
+let feature = TaskFeature(taskLeader: "Gary Wen", laborHours: 200, endDate: .init(timeIntervalSinceNow: 32000))
+
+// Read static values
+print("Department: \(TaskFeature.department)")
+print("Feature name: \(TaskFeature.name)")
+
+// Change static value
+TaskFeature.name = "3D Path Plot - Update 1"
+print("Feature name: \(TaskFeature.name)")
+```
+
+Output:
+```bash
+Department: Engineering
+Feature name: 3D Path Plot
+Feature name: 3D Path Plot - Update 1
+```
+
+x.x Static Type Property - Instance Usage
+```swift
+import Foundation
+
+struct TaskFeature {
+    static let department = "Engineering"
+    static let featureUrl = "https://dev.acme.com/3d-path-plot"
+    static var name = "3D Path Plot"
+    
+    var taskLeader = String()
+    var endDate: Date
+    var laborHours: Int
+    
+    init(taskLeader: String, laborHours: Int, endDate: Date) {
+        self.taskLeader = taskLeader
+        self.laborHours = laborHours
+        self.endDate = endDate
+    }
+    
+    func fetchTestData(urlString: String) {
+        print("Fetch test data from url: \(urlString)")
+    }
+}
+
+let feature = TaskFeature(taskLeader: "Gary Wen", laborHours: 200, endDate: .init(timeIntervalSinceNow: 3200))
+
+// Read / Update static values
+print("Department: \(TaskFeature.department)")
+print("Feature name: \(TaskFeature.name)")
+
+// Change feature name
+TaskFeature.name = "3D Path Plot - Update 1"
+print("Feature name: \(TaskFeature.name)")
+
+// Use static type property
+feature.fetchTestData(urlString: TaskFeature.featureUrl)
+```
+Output:
+```bash
+Department: Engineering
+Feature name: 3D Path Plot
+Feature name: 3D Path Plot - Update 1
+Fetch test data from url: https://dev.acme.com/3d-path-plot
+```
+
+
+
+x. Class Keyword
+x.1 class var
+
 6. Network
 
 6.1 HTTP Method
@@ -2546,3 +2694,74 @@ extension UILabel {
 * Self is not needed when referencing instance properties.
 
 
+
+20. XCTest - Unit Test
+```swift
+// Fizz Buzz
+// Divisible by 7 - Fizz
+// Divisible by 9 - Buzz
+// Divisible by 7 and 9 - FizzBuzz
+
+import Foundation
+import XCTest
+
+func fizzBuzz() -> Void {
+    
+    for i in 1 ... 63 {
+        print(fizzBuzzEngine(i))
+    }
+}
+
+func fizzBuzzEngine(_ n: Int) -> String {
+    var result = String()
+    
+    switch ( n % 7 == 0, n % 9 == 0) {
+        case (true, true):
+            result = "FizzBuzz"
+        case (true, false):
+            result = "Fizz"
+        case (false, true):
+            result = "Buzz"
+        default:
+            result = String(describing: n)
+    }
+    return result
+}
+
+//fizzBuzz()
+
+class FizzBuzzTestCase: XCTestCase {
+    
+    func testFizz() {
+        print("Test Fizz - 1")
+        XCTAssertTrue(fizzBuzzEngine(7) == "Fizz")
+    }
+    
+    func testFizz_2() {
+        print("Test Fizz - 2")
+        XCTAssertTrue(fizzBuzzEngine(49) == "Fizz")
+    }
+    
+    func testBuzz() {
+        print("Test Buzz - 1")
+        XCTAssertTrue(fizzBuzzEngine(9) == "Buzz")
+    }
+    
+    func testBuzz_2() {
+        print("Test Buzz - 2")
+        XCTAssertTrue(fizzBuzzEngine(27) == "Buzz")
+    }
+    
+    func testFizzBuzz() {
+        print("Test FizzBuzz")
+        XCTAssertTrue(fizzBuzzEngine(63) == "FizzBuzz")
+    }
+    
+    func testNumeric() {
+        print("Test Numeric")
+        XCTAssertTrue(fizzBuzzEngine(6) == "6")
+    }
+}
+
+FizzBuzzTestCase.defaultTestSuite.run()
+```
