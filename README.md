@@ -7,6 +7,7 @@ References:
 3. https://theswiftdev.com/lazy-initialization-in-swift/
 4. https://www.uraimo.com/2017/05/07/all-about-concurrency-in-swift-1-the-present/
 5. http://www.thinkingparallel.com/2006/09/09/mutual-exclusion-with-locks-an-introduction/
+6. https://www.baeldung.com/java-thread-safety
 ```
 
 ```bash
@@ -15,6 +16,7 @@ References:
 3. Functional Programming
 4. Comparison
 5. Data Types
+6. Property Observers
 6. Protocols
 7.1 Protocol Declaration
 7.2 Protocol Extension
@@ -28,6 +30,7 @@ References:
 11. Algorithms
 11.1 Sorts
 11.2 Search
+11.3 FizzBuzz
 12. Design Patterns
 13.1 Singleton
 14.2 Thread-safe Singleton
@@ -43,11 +46,17 @@ References:
 
 Definitions
 
+* Process - Process is the term for a program that is executing. 
+
+* Thread - The term thread is a shortened version of "thread of execution". It refers to a path of execution of a program code. Each program has at least one thread which is called the main thread.
+
 * Race Condition: 
 
 * Deadlock: 
 
-* Thread-safety:
+* Thread-safety: This means that multiple threads can access the same resource without causing unpredictable values or problematic program execution such as deadlock.
+
+
 
 
 1.1 Command Line Threading - Linux
@@ -755,6 +764,7 @@ import Foundation
 
 var buffer: [Int] = []
 
+// Signal required to increment value
 let semaphore = DispatchSemaphore(value: 0)
 
 var t1 = Thread {
@@ -816,7 +826,155 @@ buffer is empty.
 ```
 
 
+Thread-safe Design
 
+1. Stateless Implementation 
+
+As long as a computation is not dependent on any outside value to arrive at a result, then that computation is thread-safe. The examples below demonstrate thread-safe computation of two Fibonacci values on separate threads.
+
+The Fibonacci examples below demonstrate that the computations are independent of each other and so the fibonacci function is thread-safe. However, using separate threads to compute the Fibonacci of two numbers is very inefficient as each Fibonacci value has to be re-computed on each thread as can be seen in the example output.
+```bash
+t2 started ... compute fib 9
+t1 started ... compute fib 8
+F[2]: 1  // t1 - typical
+F[2]: 1  // t2 - typical
+
+F[3]: 2
+F[3]: 2
+
+F[4]: 3
+F[4]: 3
+
+F[5]: 5
+F[5]: 5
+
+F[6]: 8
+F[6]: 8
+
+F[7]: 13
+F[8]: 21
+
+F[7]: 13
+F[9]: 34
+F[8]: 21
+Fibonacci of 10: 55
+```
+
+1.1 Fibonacci on Multiple Threads
+```swift
+import Foundation
+
+var fib9: Int = 0
+var fib8: Int = 0
+
+func fibonacci(n: Int) -> Int {
+    if n < 2 {
+        return n
+    }
+    return fibonacci(n: n - 1) + fibonacci(n: n - 2)
+}
+
+let t1 = Thread {
+    print("t1 started ... compute fib 8")
+    fib8 = fibonacci(n: 8)
+}
+
+let t2 = Thread {
+    print("t2 started ... compute fib 9")
+    fib9 = fibonacci(n: 9)
+}
+
+t1.start()
+t2.start()
+
+// Wait for threads to complete
+Thread.sleep(forTimeInterval: 4)
+
+let fib10 = fib9 + fib8
+print("fib 10: \(fib8 + fib9)")
+```
+
+Output:
+```bash
+t1 started ... compute fib 8
+t2 started ... compute fib 9
+fib 10: 55
+```
+
+1.2 Fibonacci with Memoizaton
+
+```swift
+import Foundation
+
+var fib9: Int = 0
+var fib8: Int = 0
+
+// memoization using an array
+func fibonacci(_ n: Int) -> Int {
+    if n < 2 {
+        return n
+    }
+    
+    var F:[Int] = []
+    
+    // initialize from 0 ... n
+    for _ in (0 ... n) {
+        F.append(-1)
+    }
+    
+    F[0] = 0
+    F[1] = 1
+    
+    var j = 2
+    while j <= n {
+        
+        F[j] = F[j - 1] + F[j - 2]
+        print("F[\(j)]: \(F[j])")
+       j = j + 1
+    }
+    return F[n]
+}
+
+let t1 = Thread {
+    print("t1 started ... compute fib 8")
+    fib8 = fibonacci(8)
+}
+
+let t2 = Thread {
+    print("t2 started ... compute fib 9")
+    fib9 = fibonacci(9)
+}
+
+t1.start()
+t2.start()
+
+//Thread.sleep(forTimeInterval: 4)
+DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1), execute: {
+    print("Fibonacci of 10: \(fib8 + fib9)")
+})
+```
+Output:
+
+```bash
+t2 started ... compute fib 9
+t1 started ... compute fib 8
+F[2]: 1
+F[2]: 1
+F[3]: 2
+F[3]: 2
+F[4]: 3
+F[4]: 3
+F[5]: 5
+F[5]: 5
+F[6]: 8
+F[6]: 8
+F[7]: 13
+F[8]: 21
+F[7]: 13
+F[9]: 34
+F[8]: 21
+Fibonacci of 10: 55
+```
 
 2. NSOperationQueue
 ```swift
@@ -1267,6 +1425,15 @@ func makeVehicle() {
 makeVehicle()
 ```
 
+
+x. Property Observers
+x.1 WillSet
+The <em>willSet</em> property observer is called just before the value is stored.
+
+x.2 DidSet
+The <em>didSet</em> property observer is called immediately after the value is stored.
+
+Neither <em>willSet</em> or <em>didSet</em> is called during object initialization.
 
 6. Network
 
@@ -1740,6 +1907,116 @@ print(a)
 ```
 
 
+8.2 Search
+
+
+8.3 FizzBuzz
+
+8.3.1 - Basic
+```swift
+// Fizz Buzz
+// Divisible by 7 - Fizz
+// Divisible by 9 - Buzz
+// Divisible by 7 and 9 - FizzBuzz
+
+import Foundation
+
+func fizzBuzz() -> Void {
+    
+    for i in 1 ... 100 {
+
+        if i % 7 == 0 && i % 9 == 0 {
+            print("FizzBuzz")
+        } else if i % 7 == 0 {
+            print("Fizz")
+        } else if i % 9 == 0 {
+            print("Buzz")
+        } else {
+            print(i)
+        }
+    }
+}
+
+// function call
+fizzBuzz()
+```
+
+8.3.2 FizzBuzz Compute Engine
+```swift
+// Fizz Buzz
+// Divisible by 7 - Fizz
+// Divisible by 9 - Buzz
+// Divisible by 7 and 9 - FizzBuzz
+
+import Foundation
+
+func fizzBuzz() -> Void {
+    
+    for i in 1 ... 63 {
+        print(fizzBuzzEngine(i))
+    }
+}
+
+func fizzBuzzEngine(_ n: Int) -> String {
+    var result = String()
+    
+    if n % 7 == 0 && n % 9 == 0 {
+        result = "FizzBuzz"
+    } else if n % 7 == 0 {
+        result = "Fizz"
+    } else if n % 9 == 0 {
+        result = "Buzz"
+    } else {
+        result = String(describing: n)
+    }
+    return result
+}
+
+// function call
+fizzBuzz()
+```
+
+8.3.2 FizzBuzz - Switch Implementation
+```swift
+// Fizz Buzz
+// Divisible by 7 - Fizz
+// Divisible by 9 - Buzz
+// Divisible by 7 and 9 - FizzBuzz
+
+import Foundation
+
+func fizzBuzz() -> Void {
+    
+    for i in 1 ... 63 {
+        print(fizzBuzzEngine(i))
+    }
+}
+
+func fizzBuzzEngine(_ n: Int) -> String {
+    var result = String()
+    
+    switch ( n % 7 == 0, n % 9 == 0) {
+        case (true, true):
+            result = "FizzBuzz"
+        case (true, false):
+            result = "Fizz"
+        case (false, true):
+            result = "Buzz"
+        default:
+            result = String(describing: n)
+    }
+    return result
+}
+
+fizzBuzz()
+```
+
+
+8.3.3 FizzBuzz XCTest
+```swift
+
+
+```
 
 
 9. Design Patterns
@@ -2267,3 +2544,5 @@ extension UILabel {
 
 18. Closures
 * Self is not needed when referencing instance properties.
+
+
