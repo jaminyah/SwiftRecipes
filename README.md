@@ -1043,11 +1043,12 @@ let score = [17, 3, 22, 19, 42]
 let sum = score.reduce(0, +)
 ```
 
-3. Comparsion
+3. Comparsions
 
 3.1 Optional Binding vs Optional Chaining
 
 3.2. ViewController vs View
+ViewControllers are classes with a lifecycle. The View, however, is a canvas for displaying UI components.
 
 3.3 try vs try? vs try!
 
@@ -1057,7 +1058,61 @@ let sum = score.reduce(0, +)
 
 3.6 Any vs Any? vs Any!
 
-ViewControllers are classes with a lifecycle. The View, however, is a canvas for displaying UI components.
+3.6 Any vs AnyObject
+
+
+3.7 [String()] vs `[String]()`
+
+[String()] - Is an array that can contain elements of type String. The array currenty has one empty String element.
+
+`[String]()` - Declares a new empty array that can contain elements of type String.
+```swift
+import Foundation
+
+var item = [String()]
+var elem = [String]()
+
+print(type(of: item))
+print(type(of: elem))
+
+print("item contents: \(item)")
+print("elem contents: \(elem)")
+```
+Output:
+```bash
+Array<String>
+Array<String>
+item contents: [""]
+elem contents: []
+```
+
+3.8 Protocols vs Class
+Protocols provide abstract declarations of properties and methods. Classes, provide concrete implementation of the abstruct declarations in protocols.
+
+3.9 Class property vs Static property
+A class property can be overridden in a subclass. Static property cannot be overridden.
+
+3.10 static let vs static var
+Both <em>static let</em> and <em>static var</em> are type properties and cannot be modified by instances of the type. Properties with <em>static let</em> declaration are read-only type properties. Properties with <em>static var</em> declaration are read-write type properties.
+```swift
+enum Insole {
+    case soft
+    case medium
+    case firm
+}
+
+struct RunningShoes {
+    static let brand = "RoundRock"
+    static var terrain = "Rough Track"
+    var size = Int()
+    var cleats: String?
+    let insole: Insole = .firm 
+}
+```
+
+3.9 Static Dispatch vs Dynamic Dispatch
+
+
 
 4. Data Types
 
