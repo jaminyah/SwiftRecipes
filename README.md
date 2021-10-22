@@ -1462,6 +1462,8 @@ let sportCar = SportCar(make: "Jaguar", model: "XJR", cylinders: 8, color: .gree
 sportCar.race()
 ```
 
+<hr/>
+
 5.4 Protocol as Type
 ```swift
 import Foundation
@@ -1729,7 +1731,7 @@ x.1 class var
 6.3 URLRequest
 
 
-
+<hr/>
 
 7. Lazy Evaluation
 
@@ -1775,6 +1777,9 @@ let array = [1, 2, 3, 4]
 let last = array.lazy.map({$0 * 3}).last!
 print(last)
 ```
+
+
+<hr/>
 
 8. Algorithms
 
@@ -2290,7 +2295,7 @@ func fizzBuzzEngine(_ n: Int) -> String {
 fizzBuzz()
 ```
 
-
+<hr/>
 
 
 9. Design Patterns
@@ -3340,3 +3345,4 @@ class ViewController: UIViewController {
     }
 }
 ```
+
