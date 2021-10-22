@@ -8,6 +8,8 @@ References:
 4. https://www.uraimo.com/2017/05/07/all-about-concurrency-in-swift-1-the-present/
 5. http://www.thinkingparallel.com/2006/09/09/mutual-exclusion-with-locks-an-introduction/
 6. https://www.baeldung.com/java-thread-safety
+7. http://www.invasivecode.com/weblog/core-animation-part-ii-layers-everywhere/
+
 ```
 
 ```bash
@@ -1113,6 +1115,80 @@ struct RunningShoes {
 3.9 Static Dispatch vs Dynamic Dispatch
 
 
+3.10 let vs var
+// memory location allocation
+// memory footprint
+
+
+3.x static let vs static var
+
+both static let and static var declare properties that are available to all objects of a type. Both static let and static var are known as type properties. Static properties are accessed directly on the type without creating an instance of the type.
+
+```swift
+    struct Aircraft {
+    static let maxWeight: Int = 30_000
+    static var grossWeight: Int
+}
+
+let aircraft = Aircraft(grossWeight: 20_000)
+let maxWeight = aircraft.maxWeight
+```
+
+
+3.10 Frame vs Bounds
+
+The frame of a view refers to the view's coordinate as related to its superview.
+
+```swift
+// Typical use
+self.window.frame = UIScreen.bounds
+```
+
+This code works:
+```swift
+    self.blueView.frame = CGRect(x: 100, y: 300, width: 100, height: 100)
+```
+
+This code works:
+```swift
+    self.blueView.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+```
+
+This code does not:
+```swift
+    self.blueView.bounds = CGRect(x: 100, y: 300, width: 100, height: 100)
+```
+
+3.x static let / static var setters and getters
+
+Getters must always be included.
+
+```swift
+struct Aircraft {
+    
+    static let maxWeight: Int = 20_000
+    static let tareWeight: Int = 5_000
+    static var cargoWeight: Int = 0
+    
+    static var grossWeight: Int {
+        get {
+            return tareWeight + cargoWeight
+        }
+        set {
+            cargoWeight = newValue - tareWeight
+        }
+    }
+}
+
+override func viewDidLoad() {
+    super.viewDidLoad()
+    Aircraft.grossWeight = 15_000
+    print("cargo weight: \(Aircraft.cargoWeight)")
+}
+```
+
+
+
 
 4. Data Types
 
@@ -2215,30 +2291,27 @@ fizzBuzz()
 ```
 
 
-8.3.3 FizzBuzz XCTest
-```swift
-
-
-```
 
 
 9. Design Patterns
 
 9.1 Singleton
+
+The Singleton pattern ensures that a class is created once, and provides a global access point.
 ```swift
 import Foundation
 
 enum LoginState: String {
     case loggedIn = "LoggedIn"
-    case loggeout = "LoggedOut"
+    case loggedOut = "LoggedOut"
 }
 
-class LoginSingleton {
+final class LoginSingleton {
     
     static let shared = LoginSingleton()
     private init() {}
     
-    var loginState: LoginState = .loggeout
+    var loginState: LoginState = .loggedOut
     
     func login(_ loginState: LoginState) {
         self.loginState = loginState
@@ -2257,6 +2330,17 @@ print("Login status: \(appLogin.loginState.rawValue)")
 ```
 
 9.2 Thread-safe Singleton
+
+
+
+
+9.3 SOLID Principles
+
+S - Single Responsibility Principle
+O - Open Closed Principle
+L - Liskov Substitution Principle
+I - Interface Segregation Principle
+D - Dependency Inversion Principle
 
 
 10. Properties
@@ -2590,10 +2674,22 @@ struct Position {
 ```
 
 
+10.1 Autolayout
+
+
+
 
 11. UIKit
 
-11.1 Add UILabel - Programmatic
+11.x View LifeCycle
+* LoadView
+* viewDidLoad
+* viewWillAppear
+* viewWillLayoutSubviews
+* viewDidLayoutSubviews
+* viewDidAppear
+
+11.x Add UILabel - Programmatic
 ```swift
 //  Reference:
 //  https://stackoverflow.com/questions/24081731/how-to-create-uilabel-programmatically-using-swift
@@ -2658,7 +2754,7 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    // self-executing closure
+    // immediately invoked closure
     lazy var label: UILabel = {
         let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -2683,7 +2779,7 @@ class ViewController: UIViewController {
 }
 ```
 
-10.3 Factory method of Initialization
+11.3 Factory method of Initialization
 ```swift
 // Reference: https://theswiftdev.com/lazy-initialization-in-swift/
 
@@ -2744,6 +2840,392 @@ extension UILabel {
     }
 }
 ```
+
+
+11.5 UITableView - Storyboard add UITableViewController
+
+UITableView is a ViewController from the UIKit framework. It contains multiple rows of cells and is built upon UIScrollView. There are two properties associated with UITableView. UITableView delegate property and UITableView datasource. UITableView delegate is used for actions and modification methods. The datasource property is used for populating each cell of the table view with data.
+
+```swift
+mport UIKit
+
+class TableViewController: UITableViewController {
+
+    let cityNames = ["Abilene, TX", "Modesto, CA", "Fallon, NV", "Savannah, GA", "Baltimore, ML", "Boston, MA", "Denver, CO", "Dallas, TX", "Godley, TX"]
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Uncomment the following line to preserve selection between presentations
+        // self.clearsSelectionOnViewWillAppear = false
+
+        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
+    }
+
+    // MARK: - Table view data source
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        // #warning Incomplete implementation, return the number of sections
+        return 1
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // #warning Incomplete implementation, return the number of rows
+        return cityNames.count
+    }
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseId", for: indexPath)
+        cell.textLabel?.text = cityNames[indexPath.row]
+        return cell
+    }
+
+    /*
+        // Override to support conditional editing of the table view.
+        override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+            // Return false if you do not want the specified item to be editable.
+            return true
+        }
+        */
+
+        /*
+        // Override to support editing the table view.
+        override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+            if editingStyle == .delete {
+                // Delete the row from the data source
+                tableView.deleteRows(at: [indexPath], with: .fade)
+            } else if editingStyle == .insert {
+                // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+            }    
+        }
+        */
+
+        /*
+        // Override to support rearranging the table view.
+        override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+
+        }
+        */
+
+        /*
+        // Override to support conditional rearranging of the table view.
+        override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+            // Return false if you do not want the item to be re-orderable.
+            return true
+        }
+        */
+
+        /*
+        // MARK: - Navigation
+
+        // In a storyboard-based application, you will often want to do a little preparation before navigation
+        override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+            // Get the new view controller using segue.destination.
+            // Pass the selected object to the new view controller.
+        }
+        */
+}
+```
+
+11.x Animate UITableView Data Load
+
+```swift
+//
+//  TableViewController.swift
+//  AnimateCells
+//  Reference: http://www.wepstech.com/animate-uitableviewcell/
+
+import UIKit
+
+class TableViewController: UITableViewController {
+
+    let cityNames = ["Abilene, TX", "Modesto, CA", "Fallon, NV", "Savannah, GA", "Baltimore, ML", "Boston, MA", "Denver, CO", "Dallas, TX", "Godley, TX"]
+    
+    override func viewDidLoad() {
+        
+        // MARK: Spacial Animation CARD DROP
+        /*
+        let TipInCellAnimatorStartTransform: CATransform3D = {
+            let rotationDegrees: CGFloat = -15.0
+            let rotationRadians: CGFloat = rotationDegrees * (CGFloat(Double.pi)/180.0)
+            let offset = CGPoint(x: -20, y: -20)
+            var startTransform = CATransform3DIdentity
+            startTransform = CATransform3DRotate(CATransform3DIdentity,
+                                                 rotationRadians, 0.0, 0.0, 1.0)
+            startTransform = CATransform3DTranslate(startTransform, offset.x, offset.y, 0.0)
+            
+            return startTransform
+        }()
+        */
+        
+        super.viewDidLoad()
+
+        // Uncomment the following line to preserve selection between presentations
+        // self.clearsSelectionOnViewWillAppear = false
+
+        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
+    }
+
+    // MARK: - Table view data source
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        // #warning Incomplete implementation, return the number of sections
+        return 1
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // #warning Incomplete implementation, return the number of rows
+        return cityNames.count
+    }
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cellReuseId", for: indexPath)
+        cell.textLabel?.text = cityNames[indexPath.row]
+        return cell
+    }
+
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+
+        cell.transform = CGAffineTransform(translationX: 0, y: cell.contentView.frame.height)
+         UIView.animate(withDuration: 0.5, delay: 0.05 * Double(indexPath.row), animations: {
+         cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: cell.contentView.frame.height)
+         })
+        
+        // MARK: - alpha animation
+        /*cell.alpha = 0
+         UIView.animate(withDuration: 0.5, delay: 0.05 * Double(indexPath.row), animations: {
+         cell.alpha = 1
+         })*/
+        
+        // MARK: - Wave animation
+        /*cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: 0)
+         UIView.animate(withDuration: 4, delay: 0.05 * Double(indexPath.row), usingSpringWithDamping: 0.4, initialSpringVelocity: 0.1,
+         options: .curveEaseIn, animations: {
+         cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: cell.contentView.frame.height)
+         })*/
+        
+        // MARK: - Left to right animation
+        /*cell.transform = CGAffineTransform(translationX: 0, y: cell.contentView.frame.height)
+         UIView.animate(withDuration: 0.5, delay: 0.05 * Double(indexPath.row), animations: {
+         cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: cell.contentView.frame.height)
+         })*/
+        
+        // MARK: - Top to bottom animation
+        /*cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: 0)
+         UIView.animate(withDuration: 0.5, delay: 0.05 * Double(indexPath.row), animations: {
+         cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: cell.contentView.frame.height)
+         })*/
+        
+        // MARK: - Bounce animation
+        /*cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: 0)
+         UIView.animate(withDuration: 0.5, delay: 0.05 * Double(indexPath.row), usingSpringWithDamping: 0.4, initialSpringVelocity: 0.1,
+         options: .curveEaseIn, animations: {
+         cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: cell.contentView.frame.height)
+         })*/
+        
+        
+        // MARK: - Right to left animation
+        /*cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: 0)
+         UIView.animate(
+         withDuration: 0.5,
+         delay: 0.05 * Double(indexPath.row),
+         options: [.curveEaseInOut],
+         animations: {
+         cell.transform = CGAffineTransform(translationX: 0, y: 0)
+         })*/
+        
+        
+        // MARK: - Rotate animation
+        /*
+        cell.transform = CGAffineTransform(rotationAngle: 360)
+        UIView.animate(withDuration: 0.5, delay: 0.05 * Double(indexPath.row), animations: {
+            cell.transform = CGAffineTransform(rotationAngle: 0.0)
+        })*/
+        
+        
+        // MARK: - Linear animation
+        /*cell.transform = CGAffineTransform(translationX: cell.contentView.frame.width, y: cell.contentView.frame.height)
+         UIView.animate(
+         withDuration: 0.5,
+         delay: 0.05 * Double(indexPath.row),
+         options: [.curveLinear],
+         animations: {
+         cell.transform = CGAffineTransform(translationX: 0, y: 0)
+         })*/
+        
+        
+        // MARK: - Zoom animation
+        /*cell.transform = CGAffineTransform(scaleX: 0, y : 0)
+         UIView.animate(withDuration: 0.5, animations: {
+         cell.transform = CGAffineTransform(scaleX: 1, y : 1)
+         })*/
+        
+        // MARK: - Drag from right to left from -200 of X animation
+        /*cell.center.x += 200
+         UIView.animate(withDuration: 0.5, delay: 0.05 * Double(indexPath.row), animations: {
+         cell.center.x -= 200
+         })*/
+        
+        // MARK: Spacial Animation CARD DROP
+        /*let view = cell.contentView
+         view.layer.transform = TipInCellAnimatorStartTransform
+         view.layer.opacity = 0.8
+         UIView.animate(withDuration: 0.5) {
+         view.layer.transform = CATransform3DIdentity
+         view.layer.opacity = 1
+         }*/
+    }
+    
+    /*
+    // Override to support conditional editing of the table view.
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        // Return false if you do not want the specified item to be editable.
+        return true
+    }
+    */
+
+    /*
+    // Override to support editing the table view.
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            // Delete the row from the data source
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        } else if editingStyle == .insert {
+            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+        }    
+    }
+    */
+
+    /*
+    // Override to support rearranging the table view.
+    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+
+    }
+    */
+
+    /*
+    // Override to support conditional rearranging of the table view.
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        // Return false if you do not want the item to be re-orderable.
+        return true
+    }
+    */
+
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+    }
+    */
+}
+```
+
+UICollectionView Basic - StoryBoard 
+
+* Drag a UICollectionView object to your view controller
+* Set proper constraints on the collection view
+* Set dataSource & delegate of the collection view
+* Add a UILabel to the prototype cell
+* Add UILable constraints inside the prototype cell
+* Create a UICollectiViewCell subclass
+* Set prototype cell class & reuse identifier
+* Connect the label to the UICollectionView subclass
+
+ViewCell.swift
+
+```swift
+import UIKit
+
+class ViewCell: UICollectionViewCell {
+
+    @IBOutlet weak var textLabel: UILabel!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+    }
+
+}
+```
+
+ViewController.swift
+```swift
+import UIKit
+
+class ViewController: UIViewController {
+
+    @IBOutlet weak var collectionView: UICollectionView!
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if let flowLayout = self.collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.itemSize = CGSize(width: self.collectionView.bounds.width / 2.0, height: 120)
+        }
+    }
+
+}
+
+extension ViewController: UICollectionViewDataSource {
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 1
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 20
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! ViewCell
+        cell.textLabel.text = String(indexPath.row + 1)
+        return cell
+    }
+}
+```
+
+
+
+
+17. Arrays
+
+17.1 Initialize an Array of Strings
+
+```swift
+var array: Array<String> = Array()
+var array = [String]()
+var array: [String] = []
+var array = Array<String>()
+var array:Array<String> = []
+```
+
+17.2 Initialize an Array of AnyObject
+
+```swift
+var array: Array<AnyObject> = Array()
+    var array = [AnyObject]()
+    var array: [AnyObject] = []
+    var array = Array<AnyObject>()
+    var array:Array<AnyObject> = []
+```
+
+17.3 Initialize an Array of Integers
+var array: Array<Int> = Array()
+    var array = [Int]()
+    var array: [Int] = []
+    var array = Array<Int>()
+    var array:Array<Int> = []
+
+
+
+
 
 18. Closures
 * Self is not needed when referencing instance properties.
@@ -2819,4 +3301,42 @@ class FizzBuzzTestCase: XCTestCase {
 }
 
 FizzBuzzTestCase.defaultTestSuite.run()
+```
+
+
+22. Animations - UIViewPropertyAnimator
+
+Animate a square view, linearly, along the y-axis from position, (x:100, y:60) to position (x:100, y:300). On completion, re-position to (x:100, y:60).
+
+<p align="center">
+  <img src="img/linear-propertyanimator.png" alt="linear-propertyanimator" /> 
+</p>
+
+```swift
+import UIKit
+
+class ViewController: UIViewController {
+    
+    var blueView: UIView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        blueView = UIView(frame: CGRect(x: 100, y: 60, width: 100, height: 100))
+        blueView.backgroundColor = UIColor.blue
+        self.view.addSubview(self.blueView)
+ 
+    }
+
+    @IBAction func animate(_ sender: Any) {
+        
+        let propertyAnimator = UIViewPropertyAnimator(duration: 4, curve: .linear, animations: {
+            self.blueView.frame = CGRect(x: 100, y: 300, width: 100, height: 100)
+        })
+        propertyAnimator.addCompletion{ _ in
+            self.blueView.frame = CGRect(x: 100, y: 60, width: 100, height: 100)
+        }
+        propertyAnimator.startAnimation()
+    }
+}
 ```
