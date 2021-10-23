@@ -2767,7 +2767,7 @@ grayView.translatesAutoresizingMaskIntoConstraints = false.
 ```
 
 <p align="center">
-  <img src="img/full-screen-autolayout.png" alt="full-screen-autolayout" /> 
+  <img src="img/full-screen.png" alt="fullscreen autolayout" /> 
 </p>
 
 10.x Add constraints, programmatically, using the safeAreaLayouGuide.
