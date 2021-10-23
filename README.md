@@ -1187,7 +1187,22 @@ override func viewDidLoad() {
 }
 ```
 
+3.x setNeedsLayout vs layoutIfNeeded
 
+"The difference between these two methods can be now be described by referencing the update cycle.
+
+The method `setNeedsLayout` for a UIView tells the system that you want it to layout and redraw that view and all of its subviews, when it is time for the update cycle. This is an <em>asynchronous</em> activity, because the method completes and returns immediately, but it isn’t until some later time that the layout and redraw actually happens, and you don’t know when that update cycle will be.
+
+In contrast, the method `layoutIfNeeded` is a <em>synchronous</em> call that tells the system you want a layout and redraw of a view and its subviews, and you want it done immediately without waiting for the update cycle. When the call to this method is complete, the layout has already been adjusted and drawn based on all changes that had been noted prior to the method call.
+
+So, stated succinctly, layoutIfNeeded says update immediately please, whereas setNeedsLayout says please update but you can wait until the next update cycle."
+
+```swift
+UIView.animate(withDuration: 0.25) {
+    //self.view.layoutIfNeeded()
+    self.view.setNeedsLayout()
+}
+```
 
 
 4. Data Types
@@ -2515,7 +2530,7 @@ view controller fx: 19
 gx compute
 view controller gx: 11
 ```
-10.2.4 Lazy computed properties are only calcuated once.
+10.2.4 Lazy computed properties are only calculated once.
 ```swift
 //  Polynomial.swift
 //  LazyApp
@@ -2651,6 +2666,7 @@ view controller hx: 48
 10.2.7 Getters and Setters
 
 10.2.7.1 Computed Property with Custom Getter and Setter
+
 Standard Syntax
 ```swift
 var <property-name>: <data-type> {
@@ -2663,26 +2679,131 @@ var <property-name>: <data-type> {
 }
 ```
 
+10.2.7.2 Computed Property with Getter
+
 ```swift
 struct Position {
-    x: Double = 0.0
-    y: Double = 0.0
+    var x: Int = 0
+    var y: Int = 0
+
     var coordinate: String {
         get {
-
-        }
-        set (newValue) {
-
+            return "(x:\(x), y:\(y))"
         }
     }
 }
 ```
 
+Usage:
+
+```swift
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let position = Position(x: 5, y: 4)
+        let coordinate = position.coordinate
+        
+        // Cannot assign to property: 'coordinate' is a get-only property
+        // position.coordinate =
+            
+        print("coordinate: \(coordinate)")
+ 
+    }
+```
+
+10.2.7.3 Static Computed Property with Getter and Setter
+
+Getters must always be included.
+
+```swift
+struct Aircraft {
+    
+    static let maxWeight: Int = 20_000
+    static let tareWeight: Int = 5_000
+    static var cargoWeight: Int = 0
+    
+    static var grossWeight: Int {
+        get {
+            return tareWeight + cargoWeight
+        }
+        set {
+            cargoWeight = newValue - tareWeight
+        }
+    }
+}
+```
+
+Usage:
+
+```swift
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        Aircraft.cargoWeight = 15_000
+        print("Aircraft gross weight: \(Aircraft.grossWeight)")
+ 
+    }
+```
+
+Output:
+
+```bash
+Aircraft gross weight: 20000
+```
+
+
+<hr/>
+
+
 
 10.1 Autolayout
 
+10.x translatesAutoresizingMaskIntoConstraints to false. 
 
+This is to prevent the view’s auto-resizing mask to be translated into Auto Layout constraints and affecting your constraints.
 
+```swift
+grayView.translatesAutoresizingMaskIntoConstraints = false. 
+```
+
+<p align="center">
+  <img src="img/full-screen-autolayout.png" alt="full-screen-autolayout" /> 
+</p>
+
+10.x Add constraints, programmatically, using the safeAreaLayouGuide.
+
+```swift
+import UIKit
+
+class ViewController: UIViewController {
+    
+    weak var grayView: UIView!
+    
+    override func loadView() {
+        super.loadView()
+        
+        let grayView = UIView(frame: .zero)
+        grayView.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(grayView)
+        
+        NSLayoutConstraint.activate([
+            grayView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            grayView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+            grayView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            grauView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+        self.grayView = grayView
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view, typically from a nib.
+        self.grayView.backgroundColor = .lightGray
+    }
+}
+```
+
+<hr/>
 
 11. UIKit
 
@@ -2693,6 +2814,19 @@ struct Position {
 * viewWillLayoutSubviews
 * viewDidLayoutSubviews
 * viewDidAppear
+
+
+11.x ViewController Responsibility
+
+"The UIViewController class defines the shared behavior that is common to all view controllers. You rarely create instances of the UIViewController class directly. Instead, you subclass UIViewController and add the methods and properties needed to manage the view controller's view hierarchy.
+
+A view controller’s main responsibilities include the following:
+* Updating the contents of the views, usually in response to changes to the underlying data.
+* Responding to user interactions with views.
+* Resizing views and managing the layout of the overall interface.
+* Coordinating with other objects—including other view controllers—in your app.
+
+A view controller is tightly bound to the views it manages and takes part in handling events in its view hierarchy. Specifically, view controllers are UIResponder objects and are inserted into the responder chain between the view controller’s root view and that view’s superview, which typically belongs to a different view controller. If none of the view controller’s views handle an event, the view controller has the option of handling the event or passing it along to the superview."
 
 11.x Add UILabel - Programmatic
 ```swift
@@ -3132,6 +3266,8 @@ class TableViewController: UITableViewController {
 }
 ```
 
+<hr/>
+
 UICollectionView Basic - StoryBoard 
 
 * Drag a UICollectionView object to your view controller
@@ -3143,9 +3279,13 @@ UICollectionView Basic - StoryBoard
 * Set prototype cell class & reuse identifier
 * Connect the label to the UICollectionView subclass
 
-ViewCell.swift
+<p align="center">
+  <img src="img/collection-view.png" alt="collection-view" /> 
+</p>
 
 ```swift
+// ViewCell.swift
+
 import UIKit
 
 class ViewCell: UICollectionViewCell {
@@ -3197,7 +3337,7 @@ extension ViewController: UICollectionViewDataSource {
 ```
 
 
-
+<hr/>
 
 17. Arrays
 
@@ -3230,12 +3370,13 @@ var array: Array<Int> = Array()
 
 
 
-
+<hr/>
 
 18. Closures
 * Self is not needed when referencing instance properties.
 
 
+<hr/>
 
 20. XCTest - Unit Test
 ```swift
