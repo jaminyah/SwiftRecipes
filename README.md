@@ -3487,3 +3487,157 @@ class ViewController: UIViewController {
 }
 ```
 
+
+<hr/>
+
+22. Coding Challenge
+
+22.1 Final Keyword - Class
+
+```swift
+final class CoffeeMaker {
+    func makeCoffee() {
+        print("I am making coffee.")
+    }
+}
+
+class MountainBrew: CoffeeMaker {
+    override func makeCoffee() {
+        print("I am making mountain brew coffee.")
+    }
+}
+
+let myCoffee = MountainBrew()
+```
+
+Output:
+
+```bash
+Inheritance from a final class `CoffeeMaker`
+Instance method overrides a `final` instance method
+```
+
+22.2 Final Keyword - Method
+
+```swift
+class CoffeeMaker {
+    final func makeCoffee() {
+        print("I am making coffee.")
+    }
+}
+
+class MountainBrew: CoffeeMaker {
+    override func makeCoffee() {
+        print("I am making mountain brew coffee.")
+    }
+}
+
+let myCoffee = MountainBrew()
+```
+
+Output:
+
+```bash
+Instance method overrides a `final` instance method
+```
+
+22.3 Mutating Keyword
+
+22.3.1 Struct properties are immutable.
+
+```swift
+import Foundation
+
+struct Plant {
+    var leafCount: Int
+    
+    func grow(rate: Int) {
+        self.leafCount *= rate
+    }
+}
+
+var plant = Plant(leafCount: 4)
+plant.grow(rate: 2)
+print("leaf count: \(plant.leafCount)")
+```
+
+Output:
+
+```bash
+Error: Left side of mutating operator is not mutable: 'self' is immutable
+```
+
+22.3.2 Add Mutating Keyword to Modify struct Properties
+
+```swift
+import Foundation
+
+struct Plant {
+    var leafCount: Int
+    
+    mutating func grow(rate: Int) {
+        self.leafCount *= rate
+    }
+}
+
+var plant = Plant(leafCount: 4)
+plant.grow(rate: 2)
+print("leaf count: \(plant.leafCount)")
+```
+
+Output:
+
+```bash
+leaf count: 8
+```
+
+22.3.3 Mutating Struct `let` Error
+
+```swift
+import Foundation
+
+struct Plant {
+    var leafCount: Int
+    
+    mutating func grow(rate: Int) {
+        self.leafCount *= rate
+    }
+}
+
+let plant = Plant(leafCount: 4)
+plant.grow(rate: 2)
+print("leaf count: \(plant.leafCount)")
+```
+
+Output:
+
+```bash
+Error: Cannot use mutating member on immutable value: 'plant' is a 'let' constant
+```
+
+22.3.4 Tuples
+
+```swift
+struct Person {
+    var firstName: String
+    var lastName: String
+    var statusCode: Int = 100
+
+    init (firstName: String, lastName: String) {
+        self.firstName = firstName
+        self.lastName = lastName
+    }
+
+    func readStatus() -> (String, String, Int) {
+        return (firstName, lastName, statusCode)
+    }
+}
+
+let person = Person(firstName: "Mark", lastName: "Weir")
+let (first, last, status) = person.readStatus()
+
+print("first: \(first)")
+print("last: \(last)")
+print("status: \(status)")
+```
+
