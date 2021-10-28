@@ -4465,7 +4465,7 @@ if let middle = employee.middle { print(middle) }
 print(employee.fullName)
 ```
 
-Discussion - Immediately after object initialization `var fullName` is computed.
+Discussion - `var fullName` is computed each time it is accessed. It is not a stored value and so consumes no memory.
 
 
 
@@ -4481,3 +4481,4 @@ References:
 6. https://www.baeldung.com/java-thread-safety
 7. http://www.invasivecode.com/weblog/core-animation-part-ii-layers-everywhere/
 8: https://swiftwithsadiq.wordpress.com/2017/08/21/implicitly-unwrapped-optionals-in-swift/
+
