@@ -1,14 +1,6 @@
 #Swift Recipes
 
-References:
-```bash
-1. Swift Functional Programming
-2. Programming in Smalltalk, TR87-023, April 15, 1987
-3. https://theswiftdev.com/lazy-initialization-in-swift/
-4. https://www.uraimo.com/2017/05/07/all-about-concurrency-in-swift-1-the-present/
-5. http://www.thinkingparallel.com/2006/09/09/mutual-exclusion-with-locks-an-introduction/
-6. https://www.baeldung.com/java-thread-safety
-7. http://www.invasivecode.com/weblog/core-animation-part-ii-layers-everywhere/
+
 
 ```
 
@@ -1044,6 +1036,7 @@ Reduce
 let score = [17, 3, 22, 19, 42]
 let sum = score.reduce(0, +)
 ```
+<hr/>
 
 3. Comparsions
 
@@ -1054,11 +1047,20 @@ ViewControllers are classes with a lifecycle. The View, however, is a canvas for
 
 3.3 try vs try? vs try!
 
+
+
+
 3.4 as vs as? vs as!
+
+
 
 3.5 Stored vs Computed Properties
 
+
+
 3.6 Any vs Any? vs Any!
+
+
 
 3.6 Any vs AnyObject
 
@@ -1096,6 +1098,7 @@ A class property can be overridden in a subclass. Static property cannot be over
 
 3.10 static let vs static var
 Both <em>static let</em> and <em>static var</em> are type properties and cannot be modified by instances of the type. Properties with <em>static let</em> declaration are read-only type properties. Properties with <em>static var</em> declaration are read-write type properties.
+
 ```swift
 enum Insole {
     case soft
@@ -1204,6 +1207,7 @@ UIView.animate(withDuration: 0.25) {
 }
 ```
 
+<hr/>
 
 4. Data Types
 
@@ -1342,7 +1346,91 @@ if let name = midName {
     print("No middle name.")
 }
 ```
+
+3.x Implicitly Unwrapped Optional (!)
+
+Implicitly unwrapped are regular optionals that are allowed to have no initial value at initialization time. An implicitly unwrapped optional can be used whenever an initial value is not available at the time of variable declaration or data type initialization. The variable must be assigned a value before its first use to avoid compile-time error. It is a promise to the compiler that the variable will have a value the first time that it is accessed.
+
+3.x When to use Implicitly Unwrapped Optional
+
+* Used when setting an IBOutlet. If an outlet connection is nil in Interface Builder, a crash will occur at compile-time. "fatal error: unexpectedly found nil while unwrapping an Optional value."
+* Used when the initial value of a constant is not known at object initialization time. In general this should be avoided.
+* Used to avoid significant amount of unwrapping code.
+
+3.x Use of type `String?` 
+
+```swift
+let name: String? 
+name = "John"
+
+if let name = name {
+    print(name)
+}
+```
+
+
+
+```swift
+IBOutlet weak var nameLabel: UILabel!
+```
+
+```swift
+import UIKit
+
+class Vehicle {
+    var maker: String!    // value is not available at time of declaration or initialization
+    var year: Int
+    
+    init(year: Int) {
+        self.year = year
+    }
+    
+    func mapCarMaker(color: UIColor) -> String {
+        var carMaker: String
+        
+        switch color {
+            case .black: carMaker = "Ford"
+            case .white: carMaker = "Chrysler"
+            case .green: carMaker = "Jaguar"
+            case .red: carMaker = "Toyota"
+            default: carMaker = "Chevy"
+        }
+        self.maker = carMaker
+        return carMaker
+    }
+    
+    func showCarMaker() {
+        print("Car maker: \(String(describing: self.maker))")
+    }
+}
+
+let vehicle = Vehicle(year: 1992)
+let maker = vehicle.mapCarMaker(color: .blue)
+print(maker)
+```
+
+Discussion - A better approach is to assign the empty String value, `String()`
+
+
+3.x Implicity Unwrapped Optional - Tuples + Arrays
+
+Reference: https://swiftwithsadiq.wordpress.com/2017/08/21/implicitly-unwrapped-optionals-in-swift/
+
+```swift
+import UIKit
+
+var tuple: (Int!,Int!)     //  Using '!' is not allowed here; treating this as '?' instead
+var tuple2: (Int,Int)!     //  OK
+var tuple3: (Int?,Int?)    //  OK
+var array: [Int!]          //  Using '!' is not allowed here; treating this as '?' instead
+var array2: [Int]?         //  OK
+var array3: [Int?]         //  OK
+```
+
+
 4.8 Tuple
+
+
 
 5. Protocols
 
@@ -2374,7 +2462,9 @@ Swift instance properties come in three flavors. Stored, computed and type prope
 
 10.2 Lazy Stored Property
 "A lazy stored property is a property whose initial value isn't calculated until the first time it is used." Lazy properties increase performance in cases where the property is rarely read.
-> Lazy properties are always declared as a variable, with keyword var. This is because <em>initialization</em> of the object must be complete before the lazy property can be accessed.
+> Lazy stored properties are always declared as a variable, with keyword var. This is because <em>initialization</em> of the object must be complete before the lazy property can be accessed.
+
+> No memory is allocated for computed properties. Computed properties act like named functions that take no input parameters. Each time the compute property is access the value of the variable is re-computed.
 
 10.2.1 Computed properties 
 Computed properties can be associated with classes, structures, and enumerations (enums).
@@ -2404,7 +2494,8 @@ class Polynomial {
     }
 }
 ```
-10.2.2 Lazy property with Immediately Invoked Closure
+10.2.2 Lazy Stored Property with Immediately Invoked Closure
+
 ```swift
 //  Polynomial.swift
 //  LazyApp
@@ -2709,6 +2800,24 @@ Usage:
         print("coordinate: \(coordinate)")
  
     }
+```
+
+10.2.7.x Computed Property without Getter
+
+Since `get` is the default it can be used as an implicitly
+
+```swift
+import UIKit
+
+struct Rectangle {
+    var width: Double
+    var height: Double
+    
+    // Default is get (read-only) so the get block is not required
+    var area: Double {
+        width * height      // return is not required for the latest swift version
+    }
+}
 ```
 
 10.2.7.3 Static Computed Property with Getter and Setter
@@ -3378,6 +3487,12 @@ var array: Array<Int> = Array()
 
 <hr/>
 
+19. Error Handling -  try vs try? vs try!
+
+
+
+<hr/>
+
 20. XCTest - Unit Test
 ```swift
 // Fizz Buzz
@@ -3449,6 +3564,70 @@ class FizzBuzzTestCase: XCTestCase {
 FizzBuzzTestCase.defaultTestSuite.run()
 ```
 
+<hr/>
+
+21. Codable Testing with Python HTTP Server
+
+Ref: https://www.afternerd.com/blog/python-http-server/
+
+A python http server can be used to serve JSON code. The content of the JSON data can then be fetched and parsed into a struct data type that conforms to the Codeable protocol.
+
+Python HTTP server code:
+```py
+# server.py
+
+import http.server
+import socketserver
+
+PORT = 8081
+Handler = http.server.SimpleHTTPRequestHandler
+
+httpd = socketserver.TCPServer(("", PORT), Handler)
+print("serving at port: ", PORT)
+httpd.serve_forever()
+```
+
+JSON file to serve
+```bash
+{
+    "id": "1",
+    "title": "Star Wars",
+    "genre": "Sci-Fi"
+}
+```
+
+Swift Codable:
+```swift
+import Foundation
+
+struct Movie: Codable {
+    let id: String
+    let title: String
+    let genre: String
+}
+
+let url = URL(string: "http://localhost:8081/index.json")!
+let data = try? Data(contentsOf: url)                       
+let decoder = JSONDecoder()
+
+let movie = try? decoder.decode(Movie.self, from: data!)
+print(movie as Any)
+```
+
+21.1 Codable Testing with Default Python HTTP Server
+
+At the command line and port 8080:
+```bash
+python -m http.server 8080
+```
+
+21.2 Bind to the loop-back IP Address
+
+```bash
+python -m http.server 8080 --bind 127.0.0.1
+```
+
+<hr/>
 
 22. Animations - UIViewPropertyAnimator
 
@@ -3615,7 +3794,7 @@ Output:
 Error: Cannot use mutating member on immutable value: 'plant' is a 'let' constant
 ```
 
-22.3.4 Tuples
+22.4 Tuples
 
 ```swift
 struct Person {
@@ -3641,3 +3820,664 @@ print("last: \(last)")
 print("status: \(status)")
 ```
 
+22.5 Display Lists Based on Shorter - Compare Lenghts
+
+Input lists:
+```bash
+[1, 2, 3, 4, 5, 6, 7, 8]
+["Leo", "Ana", "Raga", "Elon", "Eric", "Gwen"]
+```
+
+```swift
+let numList = [1, 2, 3, 4, 5, 6, 7, 8]
+let nameList = ["Leo", "Ana", "Raga", "Elon", "Eric", "Gwen"]
+
+func stopAtShorter(_ first: [Int], _ second: [String]) {
+    
+    let minSize = (first.count < second.count) ? first.count : second.count
+    
+    for index in 0 ..< minSize {
+        print("\(first[index]) - \(second[index])")
+    }
+}
+
+stopAtShorter(numList, nameList)
+```
+
+Output: 
+
+```bash
+1 - Leo
+2 - Ana
+3 - Raga
+4 - Elon
+5 - Eric
+6 - Gwen
+```
+
+22.6 Display List Based on Shorter - Zip Function
+Reference: https://holyswift.app/1-year-blogging-unexpected-lessons-ive-learned
+
+```swift
+import Foundation
+
+let numList = [1, 2, 3, 4, 5, 6, 7, 8]
+let nameList = ["Leo", "Ana", "Raga", "Elon", "Eric", "Gwen"]
+
+func stopAtShorter(_ first: [Int], _ second: [String]) {
+    
+    let zipped = zip(first, second)
+    
+    for (number, name) in zipped {
+        print("\(number) - \(name)")
+    }
+}
+
+stopAtShorter(numList, nameList)
+```
+
+22.7 Copy by Value - Array
+
+```swift
+import Foundation
+
+var people = ["John", "Mary", "Adam", "Gwen"]
+var friends = people
+friends.append("Luke")
+
+
+// Question - What is the value of count
+let peopleCount = people.count
+print("array count: \(peopleCount)")
+
+let friendCount = friends.count
+print("friend count: \(friends.count)")
+```
+
+Output:
+```bash
+array count: 4
+friend count: 5
+```
+
+Discussion - Since array people is a value type, assignment to friends makes a copy. As such, modifications to friends are indepent of the people array. 
+
+22.8 Copy by Value - Dictionary
+
+```swift
+import Foundation
+
+var raceOnePoints = ["Marlon": 300, "Don": 100, "Joe": 200]
+var raceStandings = raceOnePoints
+
+raceStandings["Joe"] = 150
+raceStandings["Marlon"] = 330
+
+// What is the output of the following:
+print("raceOnePoints: \(raceOnePoints)")
+print("raceStandings: \(raceStandings)")
+```
+
+Output:
+```bash
+raceOnePoints: ["Marlon": 300, "Don": 100, "Joe": 200]
+raceStandings: ["Marlon": 330, "Don": 100, "Joe": 150]
+```
+
+22.9 Force Unwrapping Optionals - Error
+
+```swift
+import Foundation
+
+var name: String?
+
+name = nil
+
+print(name!)
+```
+
+Output:
+```bash
+Fatal error: Unexpectedly found nil while unwrapping an Optional value
+```
+
+22.10 Force Unwrapping Optionals - Corrected
+
+```swift
+import Foundation
+
+var name: String?
+
+name = nil
+
+if let name = name {
+    print(name)
+} 
+```
+
+22.11 Correctly onwrap `streetName` from the code below
+
+Reference: https://stackoverflow.com/questions/25765989/forced-unwrapping-in-swift
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = Address()
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+```
+
+Solution:
+
+```swift
+if let street = john.residence?.address?.streetName {
+    print("Johns street: \(street)")
+}
+```
+
+22.12 What is the output of the following code:
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = nil
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+
+
+
+if let street = john.residence?.address?.streetName {
+    print("Johns street: \(street)")
+} else {
+    print("Street name is nil")
+}
+```
+
+Output:
+
+```bash
+Street name is nil
+```
+
+22.13 What is the output of the following code:
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = nil
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+
+if let street = (john.residence?.address?.streetName)! {
+    print(street)
+} else {
+    print("nil")
+}
+```
+
+Output:
+
+```bash
+This code does not compile. It generates error: "Initializer for conditional binding must have
+Optional type, not String."
+
+Discussion: `if let street = ` unwraps the optional to generate a String type. Unwrapping a non-optional String type with `!` at the end of the parenthesis generates a compile-time error.
+```
+
+22.14 What is the output of the following code?
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = Address()
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+let street = john.residence?.address?.streetName!
+
+print(street!)
+```
+
+Output:
+
+```bash
+Hello Lane
+```
+
+22.15 What is the output of the following code?
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = nil
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+let street = john.residence?.address?.streetName!
+
+print(street!)
+```
+
+Output:
+
+```bash
+Fatal error: Unexpectedly found nil while unwrapping an Optional value
+```
+
+22.16 Improve the Type Safety of the code below.
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = nil
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+let street = john.residence?.address?.streetName!
+
+print(street!)
+```
+
+Solution:
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = nil
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+
+// Improved type-safety
+if let street = john.residence?.address?.streetName{
+    print(street)
+}
+```
+
+22.17 What is the output of the code below:
+
+```swift
+import Foundation
+
+class Person {
+    var residence: Residence? = Residence()
+}
+
+class Residence {
+    var address: Address? = Address()
+}
+
+class Address {
+    var streetName: String? = "Hello Lane"
+    var zipCode: String?
+    var city: String?
+}
+
+let john = Person()
+
+if let zipCode = john.residence?.address?.zipCode {
+    print(zipCode)
+}
+```
+
+Output:
+
+```bash
+There is no output.
+```
+
+22.18 What error is generated in the code below:
+
+```swift
+import Foundation
+
+let name: String?
+print(name)
+```
+
+Solution:
+
+```bash
+Compiler error: Constant `name` used before being initialized.
+```
+
+22.19 What is the output of the code below:
+
+```swift
+import Foundation
+
+let name: String! = "John"
+
+print(name)
+```
+
+Output:
+
+```bash
+Optional("John")
+```
+
+22.20 What is the output of the code below:
+
+```swift
+22.19 What is the output of the code below:
+
+```swift
+import Foundation
+
+let name: String! = "John"
+
+print(name!)
+```
+
+Output:
+
+```bash
+John
+```
+
+Discussion - name is of type Optional<String>
+
+22.21 What is the output of the following code:
+
+```swift
+import Foundation
+
+class Foo {
+    var name: String
+    
+    init(name: String) {
+        self.name = name
+    }
+    
+    func runFoo() {
+        print("Running Foo")
+    }
+}
+
+var foo: Foo?
+
+foo?.runFoo()
+```
+
+Output:
+
+```bash
+There is no output since foo is nil
+```
+
+22.22 What is the output of the code below?
+
+Reference: https://stackoverflow.com/questions/32170456/what-does-fatal-error-unexpectedly-found-nil-while-unwrapping-an-optional-value
+
+```bash
+import Foundation
+
+class Foo {
+    var name: String
+    
+    init(name: String) {
+        self.name = name
+    }
+    
+    func runFoo() {
+        print("Running Foo")
+    }
+}
+
+var foo: Foo? = Foo(name: "Mary")
+
+foo?.runFoo()
+```
+
+Output:
+
+```bash
+Running Foo
+```
+
+Discussion - If foo contains a value, this method will be called on it. If it doesn’t, nothing bad will happen – the code will simply continue executing.
+(This is similar behaviour to sending messages to nil in Objective-C)
+
+22.23 What is the output of the code below?
+
+```swift
+import Foundation
+
+class Vehicle {
+    var type: String
+    var maker: String
+    
+    init(maker: String) {
+        self.maker = maker
+    }
+    
+    func showMaker() {
+        print(maker)
+    }
+}
+
+let vehicle = Vehicle(maker: "Toyota")
+vehicle.showMaker()
+```
+
+Output:
+
+```bash
+Compile-time error: Return from initializer without initializing all stored properties
+```
+
+22.23 Add a lazy property `fullName` to the following code and print the value of `fullName`.
+
+```swift
+class Person {
+    var firstName: String
+    var middle: String?
+    var lastName: String
+    
+    init(firstName: String, middle: String? = nil, lastName: String) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.middle = middle
+    }
+}
+
+let employee = Person(firstName: "John", middle: "Be", lastName: "Good")
+
+print(employee.firstName)
+print(employee.lastName)
+if let middle = employee.middle { print(middle) }
+```
+
+Solution:
+
+```swift
+class Person {
+    var firstName: String
+    var middle: String?
+    var lastName: String
+
+    // fullName as a lazy property
+    lazy var fullName: String = {
+        if let middle = middle {
+            return firstName + " " + middle + " " + lastName
+        }
+        return firstName + " " + lastName
+    }()
+    
+    init(firstName: String, middle: String? = nil, lastName: String) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.middle = middle
+    }
+}
+
+let employee = Person(firstName: "John", middle: "Be", lastName: "Good")
+
+print(employee.firstName)
+print(employee.lastName)
+if let middle = employee.middle { print(middle) }
+print(employee.fullName)
+```
+
+Discussion - `lazy var fullName` is computed once and stored.
+
+
+22.24 Add a computed property `fullName` and print the value of `fullName`
+
+```swift
+class Person {
+    var firstName: String
+    var middle: String?
+    var lastName: String
+    lazy var fullName: String = {
+        if let middle = middle {
+            return firstName + " " + middle + " " + lastName
+        }
+        return firstName + " " + lastName
+    }()
+    
+    init(firstName: String, middle: String? = nil, lastName: String) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.middle = middle
+    }
+}
+
+let employee = Person(firstName: "John", middle: "Be", lastName: "Good")
+
+print(employee.firstName)
+print(employee.lastName)
+if let middle = employee.middle { print(middle) }
+print(employee.fullName)
+```
+
+Solution:
+
+```swift
+import UIKit
+
+class Person {
+    var firstName: String
+    var middle: String?
+    var lastName: String
+
+    // fullName computed
+    var fullName: String {
+        if let middle = middle {
+            return firstName + " " + middle + " " + lastName
+        }
+        return firstName + " " + lastName
+    }
+    
+    init(firstName: String, middle: String? = nil, lastName: String) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.middle = middle
+    }
+}
+
+let employee = Person(firstName: "John", middle: "Be", lastName: "Good")
+
+print(employee.firstName)
+print(employee.lastName)
+if let middle = employee.middle { print(middle) }
+print(employee.fullName)
+```
+
+Discussion - Immediately after object initialization `var fullName` is computed.
+
+
+
+
+
+References:
+```bash
+1. Swift Functional Programming
+2. Programming in Smalltalk, TR87-023, April 15, 1987
+3. https://theswiftdev.com/lazy-initialization-in-swift/
+4. https://www.uraimo.com/2017/05/07/all-about-concurrency-in-swift-1-the-present/
+5. http://www.thinkingparallel.com/2006/09/09/mutual-exclusion-with-locks-an-introduction/
+6. https://www.baeldung.com/java-thread-safety
+7. http://www.invasivecode.com/weblog/core-animation-part-ii-layers-everywhere/
+8: https://swiftwithsadiq.wordpress.com/2017/08/21/implicitly-unwrapped-optionals-in-swift/
