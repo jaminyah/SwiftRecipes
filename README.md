@@ -3489,7 +3489,218 @@ var array: Array<Int> = Array()
 
 19. Error Handling -  try vs try? vs try!
 
+There are four ways to handle errors in Swift:
+* Propagate the error from a function to the code that calls that function.
+* Handle the error using a `do-catch` block.
+* Handle the error as an optional value.
+* Assert that the error will not occur.
 
+19.1 Do-Catch 
+
+```swift
+import UIKit
+
+enum FlapConfig {
+    case stowed
+    case takeoff
+    case degree20
+    case degree30
+    case landing
+}
+
+enum FlapConfigFault: Error {
+    case degree0
+    case degree10
+    case degree20
+    case degree30
+    case degree45
+}
+
+enum FlapPosition {
+    case degree0
+    case degree10
+    case degree20
+    case degree30
+    case degree45
+}
+
+enum LeverPosition {
+    case first
+    case second
+    case third
+    case fourth
+    case fifth
+}
+
+func commandFlaps(degree: Int, leverPosition: LeverPosition) throws -> FlapPosition {
+    var flapPosition: FlapPosition
+    
+    switch degree {
+    case 0:
+        guard leverPosition == LeverPosition.first else {
+            throw FlapConfigFault.degree0
+        }
+        flapPosition = .degree10
+    case 10:
+        guard leverPosition == LeverPosition.second else {
+            throw FlapConfigFault.degree10
+        }
+        flapPosition = .degree20
+    case 20:
+        guard leverPosition == LeverPosition.third else {
+            throw FlapConfigFault.degree20
+        }
+        flapPosition = .degree30
+    case 30:
+        guard leverPosition == LeverPosition.fourth else {
+            throw FlapConfigFault.degree30
+        }
+        flapPosition = .degree30
+    case 45:
+        guard leverPosition == LeverPosition.fifth else {
+            throw FlapConfigFault.degree45
+        }
+        flapPosition = .degree45
+    default:
+        flapPosition = .degree0
+    }
+    return flapPosition
+}
+
+var flapConfig: FlapConfig =  .stowed
+
+do {
+    try commandFlaps(degree: 0, leverPosition: .first)
+    flapConfig = .stowed
+    print("Flap configuration: \(flapConfig)")
+} catch FlapConfigFault.degree0 {
+    print("Flap stowed config error.")
+} catch FlapConfigFault.degree10 {
+    print("Take-off config error.")
+} catch FlapConfigFault.degree20 {
+    print("Flap 20 degree config error.")
+} catch FlapConfigFault.degree30 {
+    print("Flap 30 degree config error.")
+} catch FlapConfigFault.degree45 {
+    print("Landing config error.")
+}
+```
+
+Output:
+
+```bash
+Flap configuration: stowed
+```
+
+19.x Converting Errors to Optional Values - try?
+
+In this case the `do-catch` block is not used. The code pattern for using `try?` is as follows:
+
+```swift
+func commandFlaps(degree: Int, leverPosition: LeverPosition) throws -> FlapPosition {
+    ...
+}
+
+// Solution - 1
+if let flapPosition =  try? commandFlaps(degree: 0, leverPosition: .first) {
+    print("Flap configuration: \(flapConfig.rawValue)")
+}
+
+// Solution - 2
+var flapPosition: FlapPosition?
+do {
+    flapPosition =  try commandFlaps(degree: 0, leverPosition: .first)
+    print("Flap configuration: \(flapPosition!.rawValue)")
+} catch {
+    flapPosition = nil
+}
+```
+
+19.x.x A Complete Example
+
+```swift
+import UIKit
+
+enum FlapConfig {
+    case stowed
+    case takeoff
+    case degree20
+    case degree30
+    case landing
+}
+
+enum FlapConfigFault: Error {
+    case degree0
+    case degree10
+    case degree20
+    case degree30
+    case degree45
+}
+
+enum FlapPosition {
+    case degree0
+    case degree10
+    case degree20
+    case degree30
+    case degree45
+}
+
+enum LeverPosition {
+    case first
+    case second
+    case third
+    case fourth
+    case fifth
+}
+
+func commandFlaps(degree: Int, leverPosition: LeverPosition) throws -> FlapPosition {
+    var flapPosition: FlapPosition
+    
+    switch degree {
+    case 0:
+        guard leverPosition == LeverPosition.first else {
+            throw FlapConfigFault.degree0
+        }
+        flapPosition = .degree0
+    case 10:
+        guard leverPosition == LeverPosition.second else {
+            throw FlapConfigFault.degree10
+        }
+        flapPosition = .degree10
+    case 20:
+        guard leverPosition == LeverPosition.third else {
+            throw FlapConfigFault.degree20
+        }
+        flapPosition = .degree20
+    case 30:
+        guard leverPosition == LeverPosition.fourth else {
+            throw FlapConfigFault.degree30
+        }
+        flapPosition = .degree30
+    case 45:
+        guard leverPosition == LeverPosition.fifth else {
+            throw FlapConfigFault.degree45
+        }
+        flapPosition = .degree45
+    default:
+        flapPosition = .degree0
+    }
+    return flapPosition
+}
+
+if let flapPosition =  try? commandFlaps(degree: 0, leverPosition: .first) {
+    print("Flap configuration: \(flapPosition.rawValue)")
+}
+```
+
+19.x Disable Error Propagation - try!
+
+In this case errors are not handled because the expectation is that the throws function will not return an error. If in fact it does throw and error the program will crash at runtime.
+
+```swift
+let flapPosition =  try! commandFlaps(degree: 0, leverPosition: .first)
+print("Flap configuration: \(flapPosition.rawValue)")
+```
 
 <hr/>
 
