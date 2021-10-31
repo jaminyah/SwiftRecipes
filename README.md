@@ -40,6 +40,48 @@
 21 XCTest
 22 XCUITest
 ```
+
+1. Objective-C vs Swift
+
+1.1 Optionals
+
+* Swift - Optionals for all types.
+* Objective-C has the notion of optionals but for objects only.
+
+1.2 Static vs Dynamic Typing
+
+Objective-C and Swift are both strongly typed languages. Objective-C has runtime dynamic features while Swift preforms type checking at compile-time.
+
+1.3 Programming Language Paradigm
+
+* Swift supports OOP, functional programming and procedural programming.
+* Objective-C supports OOP and procedural programming.
+* Swift provides higher order functions that shortens the code required to solve various problems.
+
+1.4 Semicolons
+* Objective-C like, C and C++, require a semicolon at the end of each statement. Swift does not require semicolon for each statement unless the statements are on the same line.
+
+1.5 Data Types
+* Must be declared in Objective-C, but can be inferred in most cases in Swift
+
+1.6 Functions
+* Swift functions are first class objects
+
+1.7 Generics
+* Swift supports generics
+
+1.8 Property Observers
+* Objective-C uses Key-Value-Observing
+* 
+
+1.9 Switch Statement
+* Swift expands the data types and does not require `break` statement after each switch case as it does not support default `fall-through`.
+
+1.10 Swift types `Any` and `AnyObject` perform roles similar to Objective-C type `(id)`.
+
+
+
+
 1. Threading
 
 Definitions
@@ -3802,6 +3844,155 @@ print("Flap configuration: \(flapPosition.rawValue)")
 
 <hr/>
 
+19.x Type Casting - as, as?, as!
+
+Type casting can be performed between classes that are related. Type casting can be performed from a super class to a subclass. This is called downcasting. If the casting is performed from subclass to super class it is called upcasting.
+
+
+19.x.1 Conditional Downcast - as?
+
+```swift
+import UIKit
+
+enum ShipType {
+    case airplane
+    case helicopter
+    case airship
+    case glider
+}
+
+class Aircraft {
+    var shipType: ShipType
+    
+    init(shipType: ShipType) {
+        self.shipType = shipType
+    }
+}
+
+class Cessna: Aircraft {
+    var fuelQuantity: Int
+    
+    init(fuelQuantity: Int) {
+        self.fuelQuantity = fuelQuantity
+        super.init(shipType: .airplane)
+    }
+}
+
+
+// Implicit upcast
+let cessna172: Aircraft = Cessna(fuelQuantity: 30)
+
+// Conditional downcast
+if let myCessna = cessna172 as? Cessna {
+    print("myCessna fuel: \(myCessna.fuelQuantity) gallons.")
+}
+```
+
+19.x.2 Forced Downcast - as!
+
+```swift
+import UIKit
+
+enum ShipType {
+    case airplane
+    case helicopter
+    case airship
+    case glider
+}
+
+class Aircraft {
+    var shipType: ShipType
+    
+    init(shipType: ShipType) {
+        self.shipType = shipType
+    }
+}
+
+class Cessna: Aircraft {
+    var fuelQuantity: Int
+    
+    init(fuelQuantity: Int) {
+        self.fuelQuantity = fuelQuantity
+        super.init(shipType: .airplane)
+    }
+}
+
+// Implicit upcast
+let cessna172: Aircraft = Cessna(fuelQuantity: 30)
+
+
+// Forced downcast
+let myCessna = cessna172 as! Cessna
+print("myCessna fuel: \(myCessna.fuelQuantity) gallons.")
+```
+
+19.x Downcasting to access member property
+
+The following code generates the error `Value of type 'Aircraft' has no member 'fuelQuantity'`
+
+```swift
+import UIKit
+
+enum ShipType {
+    case airplane
+    case helicopter
+    case airship
+    case glider
+}
+
+class Aircraft {
+    var shipType: ShipType
+    
+    init(shipType: ShipType) {
+        self.shipType = shipType
+    }
+}
+
+class Cessna: Aircraft {
+    var fuelQuantity: Int
+    
+    init(fuelQuantity: Int) {
+        self.fuelQuantity = fuelQuantity
+        super.init(shipType: .airplane)
+ 
+    }
+}
+
+let cessna172: Cessna = Cessna(fuelQuantity: 30)
+let myCessna: Aircraft = cessna172
+
+// Error - Value of type 'Aircraft' has no member 'fuelQuantity'
+print("myCessna fuel: \(myCessna.fuelQuantity) gallons.")
+
+```
+
+Solution: Downcast from type Aircraft to subclass Cessna
+
+```swift
+if let myCessna = myCessna as? Cessna {
+    print("myCessna fuel: \(myCessna.fuelQuantity) gallons.")
+}
+```
+
+19.x Cast Between Swift and Objective-C Data Types
+
+* NSString -> String
+* NSDictionary -> Dictionary
+* NSArray -> Array<>
+
+```swift
+import UIKit
+
+let swiftStr = "Hello"
+let objcString = swiftStr as NSString
+print(objcString)
+```
+
+
+
+
+<hr/>
+
 20. XCTest - Unit Test
 ```swift
 // Fizz Buzz
@@ -3974,6 +4165,9 @@ class ViewController: UIViewController {
     }
 }
 ```
+
+<hr/>
+
 
 
 <hr/>
@@ -5216,7 +5410,67 @@ Output:
 area1 - first evaluation: 32
 ```
 
+3.x What is the output of the code below:
 
+```swift
+import UIKit
+
+class Rectangle {
+    
+    private var width: Int
+    private var height: Int
+    var color: UIColor
+    
+    // computed area
+    var area: Int {
+        return width * height
+    }
+    /*
+    init (width: Int, height: Int, color: UIColor) {
+        self.width = width
+        self.height = height
+        self.color = color
+    }*/
+}
+
+let rect1 = Rectangle(width: 4, height: 8, color: .black)
+print("area1 - first evaluation: \(rect1.area)")
+```
+
+Output:
+
+```bash
+Class 'Rectangle' has no initializers
+```
+
+3.x Guard - What is the output of the code below:
+
+```swift
+import UIKit
+
+struct Book {
+    var title: String
+    var isbn13: String
+}
+
+func retrieve(book: Book?) {
+    guard let book = book else {
+        print("Cannot retrive book")
+    }
+    
+    print(book.title)
+}
+
+let swiftFundation = Book(title: "Swift Foundation", isbn13: "978-1-86197-876-9")
+```
+
+Output:
+
+```bash
+guard error
+```
+
+Discussion - The `guard` block requires an exit statement such as `return`
 
 
 
