@@ -5473,6 +5473,134 @@ guard error
 Discussion - The `guard` block requires an exit statement such as `return`
 
 
+3.x Solve FizzBuzz - If/Else Statement
+
+```swift
+for i in 1...20 {
+    
+    if i % 3 == 0 && i % 5 == 0 {
+        print("FizzBuzz")
+    } else if i % 3 == 0 {
+        print("Fizz")
+    } else if i % 5 == 0 {
+        print("Buzz")
+    } else {
+        print(i)
+    }
+}
+```
+
+3.x Solve FizzBuzz - Switch Statement
+
+```swift
+import Foundation
+
+for i in 1...20 {
+    switch (i % 3 == 0, i % 5 == 0) {
+    case (true, true):
+        print("FizzBuzz")
+    case (true, false):
+        print("Fizz")
+    case (false, true):
+        print("Buzz")
+    default:
+        print(i)
+    }
+}
+```
+
+3.x Solve FizzBuzz - Switch Statement with Boolean constants
+
+Reference: https://learnappmaking.com/fizzbuzz-swift/
+
+```swift
+import Foundation
+
+let FIZZ = true
+let BUZZ = true
+
+for i in 1...20 {
+    switch (i % 3 == 0, i % 5 == 0) {
+    case (FIZZ, BUZZ):
+        print("FizzBuzz")
+    case (FIZZ, _):
+        print("Fizz")
+    case (_, BUZZ):
+        print("Buzz")
+    default:
+        print(i)
+    }
+}
+```
+
+3.x Solve FizzBuzz - Closure / Map
+
+```swift
+import Foundation
+
+let fizzBuzz: (Int) -> String = { i in
+    
+    let FIZZ = true
+    let BUZZ = true
+    var result = String()
+    
+    switch (i % 3 == 0, i % 5 == 0) {
+    case (FIZZ, BUZZ):
+        result = "FizzBuzz"
+    case (FIZZ, _):
+        result = "Fizz"
+    case (_, BUZZ):
+        result = "Buzz"
+    default:
+        result = "\(i)"
+    }
+    return result
+}
+
+let array = Array(1...24).map(fizzBuzz).joined(separator: ", ")
+print(array)
+```
+
+3.x Solve FizzBuzz - Closure / Map alternate
+
+```swift
+import Foundation
+
+let result: [String] = Array(1...24).map { i in
+    
+    var str = String()      // empty string
+    
+    if i % 3 == 0 {
+        str += "Fizz"
+    }
+    if i % 5 == 0 {
+        str += "Buzz"
+    }
+    return str.isEmpty ? String(i) : str
+}
+
+print(result.joined(separator: "\n"))
+```
+
+3.x Solve FizzBuzz - ForEach
+
+```swift
+import Foundation
+
+func fizzBuzz(i: Int) -> String {
+    var str = "" 
+    
+    if i % 3 == 0 {
+        str += "Fizz"
+    }
+    if i % 5 == 0 {
+        str += "Buzz"
+    }
+    return str.isEmpty ? String(i) : str
+}
+
+(1...20).forEach{ print(fizzBuzz(i: $0))}
+```
 
 
 References:
@@ -5485,4 +5613,5 @@ References:
 6. https://www.baeldung.com/java-thread-safety
 7. http://www.invasivecode.com/weblog/core-animation-part-ii-layers-everywhere/
 8: https://swiftwithsadiq.wordpress.com/2017/08/21/implicitly-unwrapped-optionals-in-swift/
-
+9. https://learnappmaking.com/fizzbuzz-swift/
+10. https://codereview.stackexchange.com/questions/56805/is-this-fizzbuzz-swift-y
